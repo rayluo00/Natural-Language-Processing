@@ -19,8 +19,10 @@ def backtrace (dist, i, j, target, source):
 	if (mincost == dist[i][j-1]+1):
 		return i, (j-1), 'd'
 
-
 def distance (target, source, insertcost, deletecost, replacecost):
+	outTarget = ''
+	outSource = ''
+	outOps = ''
 	n = len(target)+1
 	m = len(source)+1
 
@@ -45,26 +47,34 @@ def distance (target, source, insertcost, deletecost, replacecost):
 			substcost = add + dist[i-1][j-1]
 			dist[i][j] = min(inscost, delcost, substcost)
 
-	print "\n"
+	print 'levenshtein distance =', dist[n-1][m-1], '\n'
+
 	i = n - 1
 	j = m - 1
 	while (i > 0 or j > 0):
 		i2, j2, op = backtrace(dist, i, j, target, source)
 		
 		if (op == 'i'):
-			print target[i-1], "  _"
+			outTarget = target[i-1] + ' ' + outTarget
+			outSource = '_ ' + outSource
+			outOps = '  ' + outOps
 		elif (op == 'd'):
-			print "_  ", source[j-1]
+			outTarget = '_ ' + outTarget
+			outSource = source[j-1] + ' ' + outSource
+			outOps = '  ' + outOps
 		else:
-			print target[i-1], op, source[j-1]
+			outTarget = target[i-1] + ' ' + outTarget
+			outSource = source[j-1] + ' ' + outSource
+			outOps = op + ' ' + outOps
 		i = i2
 		j = j2
-	print "\n"	
-
-	# return min edit distance
-	return dist[n-1][m-1]
+	
+	print outTarget+'\n'+outOps+'\n'+outSource+'\n'
 
 if __name__=="__main__":
-    from sys import argv
-    if len(argv) > 2:
-        print "levenshtein distance =", distance(argv[1], argv[2], 1, 1, 2)
+	from sys import argv
+
+	if len(argv) > 2:
+		distance(argv[1], argv[2], 1, 1, 2)
+	else:
+		print 'ERROR: Not enough arguments.\n'
