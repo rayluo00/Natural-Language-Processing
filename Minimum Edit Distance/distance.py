@@ -7,64 +7,57 @@ Authors: Raymond Weiming Luo and Ben Ellerby
 
 '''
 
-def backtrace (dist, target, source, tAlign, sAlign, opAlign, stack):
-	print "STACK: ", stack, "\n"
+def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
+	x = node[0]
+	y = node[1]
 
-	if not stack:
-		print tAlign, "\n", opAlign, "\n", sAlign, "\n"
-		return
+	cost = dist[x][y]
 
-	coordinates = stack.pop()
-
-	if dist[coordinates[0]-1][coordinates[1]] == 0:
-		print tAlign, "\n", opAlign, "\n", sAlign, "\n"
-
-	if dist[coordinates[0]][coordinates[1]-1] == 0:
-		print tAlign, "\n", opAlign, "\n", sAlign, "\n"
-
-	if dist[coordinates[0]][coordinates[1]] == 0:
-		print tAlign, "\n", opAlign, "\n", sAlign, "\n"
-
-        node = dist[coordinates[0]][coordinates[1]]
+	fdist[x][y] = -1
 	
-	# Check left
-	if (coordinates[0]-1 >= 0 and (dist[coordinates[0]-1][coordinates[1]]+1) == node):
-		#tAlign = target[coordinates[0]-1] + " " + tAlign
-		#sAlign = "_ " + sAlign
-		#opAlign = "  " + opAlign
-		stack.append([coordinates[0]-1, coordinates[1]])
-		op = "i"
-
-	# Check up
-	if (coordinates[1]-1 >= 0 and (dist[coordinates[0]][coordinates[1]-1]+1) == node):
-		#tAlign = "_ " + tAlign
-		#sAlign = source[coordinates[1]-1] + " " + sAlign
-		#opAlign = "  " + opAlign
-		stack.append([coordinates[0], coordinates[1]-1])
-		op = "d"
-
-	# Check diagonal
-	if (coordinates[0]-1 >= 0 and coordinates[1]-1 >= 0 and (dist[coordinates[0]-1][coordinates[1]-1]) == node):
-		#tAlign = target[coordinates[0]-1] + " " + tAlign
-		#sAlign = source[coordinates[1]-1] + " " + sAlign
-		#opAlign = "| " + opAlign
-		stack.append([coordinates[0]-1, coordinates[1]-1])
-		op = "|"
+	print '-------------------------------------------'
+	#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist])), "\n"
+	print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in fdist])), "\n"
+	print node
 	
-	if (coordinates[0]-1 >= 0 and coordinates[1]-1 >= 0 and (dist[coordinates[0]-1][coordinates[1]-1]+2) == node):
-		#tAlign = target[coordinates[0]-1] + " " + tAlign
-		#sAlign = source[coordinates[1]-1] + " " + sAlign
-		#opAlign = "  " + opAlign
-		stack.append([coordinates[0]-1, coordinates[1]-1])
-		op = "s"
 
-	backtrace(dist, target, source, tAlign, sAlign, opAlign, stack, op)
+	if (op is 'i'):
+		tAlign = target[x] + ' ' + tAlign
+		sAlign = '_ ' + sAlign
+		opAlign = '  ' + opAlign
+	elif (op is 'd'):
+		tAlign = '_ ' + tAlign
+		sAlign = source[y] + ' ' + sAlign
+		opAlign = '  ' + opAlign
+	elif (op is 's'):
+		tAlign = target[x] + ' ' + tAlign
+		sAlign = source[y] + ' ' + sAlign
+		if (target[x-1] is source[y]):
+			opAlign = '| ' + opAlign
+		else:
+			opAlign = '  ' + opAlign
+
+	if (x == 0 and y == 0):
+		print tAlign, '\n', opAlign, '\n', sAlign, '\n'
+		print '-------------------------------------------\n'
+	else:
+		if (fdist[x-1][y] != -1 and dist[x-1][y]+1 == cost):
+			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y], 'i')
+		if (fdist[x][y-1] != -1 and dist[x][y-1]+1 == cost):
+			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x, y-1], 'd')
+		if (fdist[x-1][y-1] != -1 and (dist[x-1][y-1] == cost or dist[x-1][y-1]+2 == cost)):
+			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y-1], 's')
+
+	fdist[x][y] = dist[x][y]
+	#tAlign = tAlign[2:]
+	#sAlign = sAlign[2:]
+	#opAlign = opAlign[2:]
 
 def distance (target, source, insertcost, deletecost, replacecost):
 	n = len(target)+1
 	m = len(source)+1
 
-    # set up dist and initialize values
+    # set up dist and initialize valuesi
 	dist = [ [0 for j in range(m)] for i in range(n) ]
 	for i in range(1,n):
 		dist[i][0] = dist[i-1][0] + insertcost
@@ -91,16 +84,15 @@ def distance (target, source, insertcost, deletecost, replacecost):
 if __name__=="__main__":
 	from sys import argv
 	alignments = 100
-	stack = []
 	
 	if (len(argv) > 2):
 		if (len(argv) == 4):
 			alignments = argv[3]
                 
 		dist = distance(argv[1], argv[2], 1, 1, 2)
+		fdist = [row[:] for row in dist]
+		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
+		backtrace(argv[1], argv[2], '', '', '', dist, fdist, [len(argv[1]), len(argv[2])], '')
 		print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))		
-
-		stack.append([len(argv[1]), len(argv[2])])
-		backtrace(dist, argv[1], argv[2], "", "", "", stack)
 	else:
 		print 'ERROR: Not enough arguments.\n'
