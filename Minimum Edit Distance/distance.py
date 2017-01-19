@@ -15,11 +15,12 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 
 	fdist[x][y] = -1
 	
+	'''
 	print '-------------------------------------------'
 	#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist])), "\n"
 	print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in fdist])), "\n"
 	print node
-	
+	'''
 
 	if (op is 'i'):
 		tAlign = target[x] + ' ' + tAlign
@@ -29,13 +30,14 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 		tAlign = '_ ' + tAlign
 		sAlign = source[y] + ' ' + sAlign
 		opAlign = '  ' + opAlign
+	elif (op is '|'):
+		tAlign = target[x] + ' ' + tAlign
+		sAlign = source[y] + ' ' + sAlign
+		opAlign = '| ' + opAlign
 	elif (op is 's'):
 		tAlign = target[x] + ' ' + tAlign
 		sAlign = source[y] + ' ' + sAlign
-		if (target[x] is source[y]):
-			opAlign = '| ' + opAlign
-		else:
-			opAlign = '  ' + opAlign
+		opAlign = '  ' + opAlign
 
 	if (x == 0 and y == 0):
 		print tAlign, '\n', opAlign, '\n', sAlign, '\n'
@@ -45,7 +47,9 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y], 'i')
 		if (fdist[x][y-1] != -1 and dist[x][y-1]+1 == cost):
 			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x, y-1], 'd')
-		if (fdist[x-1][y-1] != -1 and (dist[x-1][y-1] == cost or dist[x-1][y-1]+2 == cost)):
+		if (fdist[x-1][y-1] != -1 and dist[x-1][y-1] == cost and target[x-1] == source[y-1]):
+			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y-1], '|')
+		if (fdist[x-1][y-1] != -1 and dist[x-1][y-1]+2 == cost):
 			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y-1], 's')
 
 	fdist[x][y] = dist[x][y]
@@ -93,6 +97,6 @@ if __name__=="__main__":
 		fdist = [row[:] for row in dist]
 		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
 		backtrace(argv[1], argv[2], '', '', '', dist, fdist, [len(argv[1]), len(argv[2])], '')
-		print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))		
+		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))		
 	else:
 		print 'ERROR: Not enough arguments.\n'
