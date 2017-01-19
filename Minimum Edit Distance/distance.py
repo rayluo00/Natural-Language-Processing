@@ -32,7 +32,7 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 	elif (op is 's'):
 		tAlign = target[x] + ' ' + tAlign
 		sAlign = source[y] + ' ' + sAlign
-		if (target[x-1] is source[y]):
+		if (target[x] is source[y]):
 			opAlign = '| ' + opAlign
 		else:
 			opAlign = '  ' + opAlign
