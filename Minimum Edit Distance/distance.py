@@ -16,13 +16,6 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 	cost = dist[x][y]
 
 	fdist[x][y] = -1
-	
-	'''
-	print '-------------------------------------------'
-	#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist])), "\n"
-	print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in fdist])), "\n"
-	print node
-	'''
 
 	if (op is 'i'):
 		tAlign = target[x] + ' ' + tAlign
@@ -57,9 +50,6 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 			backtrace(target, source, tAlign, sAlign, opAlign, dist, fdist, [x-1, y-1], 's')
 
 	fdist[x][y] = dist[x][y]
-	#tAlign = tAlign[2:]
-	#sAlign = sAlign[2:]
-	#opAlign = opAlign[2:]
 
 def distance (target, source, insertcost, deletecost, replacecost):
 	n = len(target)+1
@@ -100,9 +90,8 @@ if __name__=="__main__":
                 
 		dist = distance(argv[1], argv[2], 1, 1, 2)
 		fdist = [row[:] for row in dist]
-		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
+
 		backtrace(argv[1], argv[2], '', '', '', dist, fdist, [len(argv[1]), len(argv[2])], '')
-		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
 		print "COUNT: ", count
 	else:
 		print 'ERROR: Not enough arguments.\n'
