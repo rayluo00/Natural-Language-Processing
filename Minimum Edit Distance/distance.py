@@ -17,6 +17,7 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 
 	fdist[x][y] = -1
 
+	# Format the alignment string for a specified operation.
 	if (op is 'i'):
 		tAlign = target[x] + ' ' + tAlign
 		sAlign = '_ ' + sAlign
@@ -25,15 +26,21 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 		tAlign = '_ ' + tAlign
 		sAlign = source[y] + ' ' + sAlign
 		opAlign = '  ' + opAlign
-	elif (op is '|'):
+	elif (op is '|' or op is 's'):
 		tAlign = target[x] + ' ' + tAlign
 		sAlign = source[y] + ' ' + sAlign
-		opAlign = '| ' + opAlign
-	elif (op is 's'):
-		tAlign = target[x] + ' ' + tAlign
-		sAlign = source[y] + ' ' + sAlign
-		opAlign = '  ' + opAlign
+		
+		if (op is '|'):
+			#tAlign = target[x] + ' ' + tAlign
+			#sAlign = source[y] + ' ' + sAlign
+			opAlign = '| ' + opAlign
+		elif (op is 's'):
+			#tAlign = target[x] + ' ' + tAlign
+			#sAlign = source[y] + ' ' + sAlign
+			opAlign = '  ' + opAlign
 
+	# If position is at (0,0), we have concluded a possible alignment.
+	# Else, do a recursive DFS search to find possible alignments.
 	if (x == 0 and y == 0):
 		global count
 		count = count + 1
@@ -55,14 +62,14 @@ def distance (target, source, insertcost, deletecost, replacecost):
 	n = len(target)+1
 	m = len(source)+1
 
-    # set up dist and initialize valuesi
+    # Set up dist and initialize values
 	dist = [ [0 for j in range(m)] for i in range(n) ]
 	for i in range(1,n):
 		dist[i][0] = dist[i-1][0] + insertcost
 	for j in range(1,m):
 		dist[0][j] = dist[0][j-1] + deletecost
 
-    # align source and target strings
+    # Align source and target strings
 	for j in range(1,m):
 		for i in range(1,n):
 			inscost = insertcost + dist[i-1][j]
