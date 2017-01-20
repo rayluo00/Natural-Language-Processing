@@ -7,6 +7,8 @@ Authors: Raymond Weiming Luo and Ben Ellerby
 
 '''
 
+count = 0
+
 def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 	x = node[0]
 	y = node[1]
@@ -40,6 +42,8 @@ def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op):
 		opAlign = '  ' + opAlign
 
 	if (x == 0 and y == 0):
+		global count
+		count = count + 1
 		print tAlign, '\n', opAlign, '\n', sAlign, '\n'
 		print '-------------------------------------------\n'
 	else:
@@ -87,6 +91,7 @@ def distance (target, source, insertcost, deletecost, replacecost):
 
 if __name__=="__main__":
 	from sys import argv
+	global count
 	alignments = 100
 	
 	if (len(argv) > 2):
@@ -97,6 +102,7 @@ if __name__=="__main__":
 		fdist = [row[:] for row in dist]
 		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
 		backtrace(argv[1], argv[2], '', '', '', dist, fdist, [len(argv[1]), len(argv[2])], '')
-		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))		
+		#print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in dist]))
+		print "COUNT: ", count
 	else:
 		print 'ERROR: Not enough arguments.\n'
