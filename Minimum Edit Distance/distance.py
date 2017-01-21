@@ -24,6 +24,9 @@ the levenshtein distance. Create three strings to display the target, source and
 operations used for the alignment. If a third argument was passed to the main
 function, display a total of the input number's alignments. Otherwise, the default
 alignment print count is 100 alignments.
+
+Tracking the path for the DFS search of an alignment is kept on a seperate 2d array
+(fdist).
 '''
 def backtrace (target, source, tAlign, sAlign, opAlign, dist, fdist, node, op, alignments):
 	global count
