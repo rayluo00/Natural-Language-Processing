@@ -1,0 +1,628 @@
+1.1
+
+>>> import nltk
+>>> f = open("sample.txt")
+>>> text = f.read()
+>>> sentences = nltk.sent_tokenize(text)
+>>> len(sentences)
+22
+
+1.2
+a.
+>>> import nltk
+>>> f = open("nc.txt")
+>>> from nltk.tokenize import TreebankWordTokenizer
+>>> tokens = TreebankWordTokenizer().tokenize(f.read())
+>>> text = nltk.Text(tokens)
+>>> len(text)
+1384089
+
+
+b.
+>>> len(set(text))
+50910
+
+
+c.
+>>> from __future__ import division
+>>> len(set(text)) / len(text)
+0.03678231674408221
+
+
+d.
+>>> f = open(nc.txt).read()
+>>> from nltk.tokenize import TreebankWordTokenizer
+>>> tokens = TreebankWordTokenizer().tokenize(f)
+--
+import re          
+                   
+def countre(pattern, list):
+    count = 0   
+    for s in list:
+        if re.match(pattern, s): 
+            count = count + 1 
+    return count                                                                                                                                                                              
+--
+>>> from count import countre
+>>> countre(r'[0-9]', tokens)
+10518
+
+
+e.
+>>> countre(r'\p', tokens)
+52602
+
+
+f.
+>>> countre(r'[A-Za-z][0-9]', tokens)
+132
+
+
+g.
+>>> for s in fdist.most_common(20):
+...     print s, fdist.freq(s[0])
+... 
+('the', 73805) 0.053323883074
+(',', 73224) 0.0529041123801
+('of', 40440) 0.0292177742905
+('to', 36030) 0.0260315629992
+('and', 33579) 0.0242607231182
+('in', 25557) 0.018464853055
+('a', 24853) 0.0179562152434
+('is', 18443) 0.0133250101691
+('that', 16928) 0.0122304273786
+("'s", 13687) 0.00988881495337
+('for', 11237) 0.0081186975693
+('be', 8751) 0.00632257029714
+('not', 8214) 0.00593458946643
+('as', 8128) 0.00587245473376
+('are', 8079) 0.00583705238608
+('The', 7964) 0.00575396524356
+('with', 7159) 0.00517235524594
+('on', 7073) 0.00511022051328
+('it', 7062) 0.00510227304747
+('by', 6949) 0.00502063089874
+
+
+h.
+>>> f = open("nc.txt")
+>>> f = f.read()
+>>> f = f.translate(None, string.punctuation)
+>>> stopwords = open("stopwords.txt")
+>>> stopwords = stopwords.read()
+>>> stopwords = stopwords.split()
+>>> tokens = TreebankWordTokenizer().tokenize(f)                                                                                                                                              
+>>> result = [word for word in tokens if word.lower() not in stopwords]
+>>> fdist = FreqDist(result)                                                                                                                                                                  
+>>> for s in fdist.most_common(20):
+...     print s, fdist.freq(s[0])
+... 
+('countries', 2683) 0.00452966143187
+('government', 2294) 0.00387291961413
+('political', 2287) 0.00386110163797
+('European', 2170) 0.00366357260796
+('economic', 2152) 0.00363318352642
+('Europe', 2112) 0.0035656522341
+('world', 2012) 0.00339682400332
+('years', 1955) 0.00330059191178
+('people', 1805) 0.0030473495656
+('EU', 1520) 0.00256618910788
+('policy', 1515) 0.00255774769634
+('China', 1456) 0.00245813904018
+('growth', 1403) 0.00236866007786
+('financial', 1395) 0.0023551538194
+('power', 1366) 0.00230619363247
+('economy', 1364) 0.00230281706786
+('international', 1317) 0.00222346779939
+('global', 1215) 0.00205126300399
+('crisis', 1205) 0.00203438018092
+('country', 1186) 0.00200230281707
+
+
+i.
+>>> len(fdist.hapaxes())
+21843
+>>> len(fdist.hapaxes()) / len(set(text))
+0.42905126694166174
+
+
+j.
+(post stopwords/punc stripping)
+>>> bigrams = nltk.bigrams(result)
+>>> bfdist = FreqDist(bigrams)
+>>> for s in bfdist.most_common(20):
+...     print s, bfdist.freq(s[0])
+... 
+(('United', 'States'), 684) 0.00115478704815
+(('Middle', 'East'), 370) 0.000624665508503
+(('European', 'Union'), 352) 0.000594276375657
+(('interest', 'rates'), 351) 0.000592588090499
+(('years', 'ago'), 341) 0.000575705238918
+(('Latin', 'America'), 313) 0.00052843325449
+(('human', 'rights'), 278) 0.000469343273956
+(('member', 'states'), 273) 0.000460901848166
+(('exchange', 'rate'), 250) 0.000422071289529
+(('foreign', 'policy'), 250) 0.000422071289529
+(('Prime', 'Minister'), 242) 0.000408565008264
+(('economic', 'growth'), 241) 0.000406876723106
+(('financial', 'crisis'), 216) 0.000364669594153
+(('climate', 'change'), 166) 0.000280255336247
+(('Eastern', 'Europe'), 157) 0.000265060769824
+(('United', 'Nations'), 154) 0.00025999591435
+(('developing', 'countries'), 153) 0.000258307629192
+(('central', 'banks'), 152) 0.000256619344034
+(('Bush', 'administration'), 150) 0.000253242773717
+(('monetary', 'policy'), 146) 0.000246489633085
+
+1.3
+In [1]: import nltk
+
+In [2]: from nltk.tokenize import TweetTokenizer
+
+In [3]: f = open("mbt.txt").read()
+In [5]: tt = TweetTokenizer().tokenize(f)
+
+In [6]: tt
+Out[6]: 
+[u'purple',
+ u'is',
+ u'the',
+ u'new',
+ u'pink',
+ u',',
+ u'blue',
+ u',',
+ u'green',
+ u',',
+ u'red',
+ u',',
+ u'gold',
+ u'ghadw',
+ u',',
+ u'hfuqi',
+ u'EVERYTHING',
+ u'!',
+ u':D',
+ u'JUSTIN',
+ u'BIEBER',
+ u'IS',
+ u'TAKING',
+ u'OVER',
+ u'THE',
+ u'WORLD',
+ u'BITCHEZZ',
+ u':D',
+ u'CHEF',
+ u'DE',
+ u'PRODUIT',
+ u'H',
+ u'/',
+ u'F',
+ u':',
+ u'Filiale',
+ u'du',
+ u'groupe',
+ u'Air',
+ u'Liquide',
+ u',',
+ u'ORKYN',
+ u'est',
+ u'le',
+ u'leader',
+ u'en',
+ u'France',
+ u'des',
+ u'services',
+ u'\xe0',
+ u'la',
+ u'personne',
+ u'po',
+ u'...',
+ u'http://bit.ly/fYRplv',
+ u'Pledge',
+ u'to',
+ u'cut',
+ u'council',
+ u'tax',
+ u'by',
+ u'1',
+ u'%',
+ u'http://bbc.in/hlRSDO',
+ u'Customer',
+ u'Service-BPS',
+ u'Sr',
+ u'Rep',
+ u'in',
+ u'$',
+ u'vacancy.state',
+ u',',
+ u'Lincoln',
+ u',',
+ u'http://www.americanhomeagentassociation.org/career/27773',
+ u'#career',
+ u'#jobs',
+ u'@sreesanth',
+ u'Congrats',
+ u'..',
+ u'Hope',
+ u'you',
+ u'will',
+ u'bowl',
+ u'India',
+ u'to',
+ u'victory',
+ u'in',
+ u'the',
+ u'world',
+ u'cup',
+ u'final',
+ u'..',
+ u'Playboy',
+ u'South',
+ u'Africa',
+ u'launches',
+ u'next',
+ u'month',
+ u'|',
+ u'Entertainment',
+ u'|',
+ u'Zoopy',
+ u'-',
+ u'The',
+ u'World',
+ u'in',
+ u'90',
+ u'Seconds',
+ u'http://www.zoopy.com/entertainment/222/playboy-media-launch',
+ u'\u2026',
+ u'via',
+ u'@zoopy',
+ u'2',
+ u'am',
+ u'!',
+ u'TIME',
+ u'TO',
+ u'SLEEP',
+ u':)',
+ u'Goodnight',
+ u'world',
+ u',',
+ u'see',
+ u'ya',
+ u'in',
+ u'about',
+ u'6',
+ u'hours',
+ u'.',
+ u'@GladamFan',
+ u'You',
+ u'and',
+ u'your',
+ u'FOREIGN',
+ u'languages',
+ u'...',
+ u';D',
+ u'#pleasestopbeforeihaveaseizure',
+ u'=D',
+ u'\u201d',
+ u'Lol',
+ u'i',
+ u'phone\u8cb7\u3046\u306e\u306b\u4e00\u756a\u5b89\u3044\u65b9\u6cd5\u3063\u3066\u3054\u5b58\u77e5\u306a\u65b9\u3044\u3089\u3063\u3057\u3083\u308a\u307e\u305b\u3093\u304b\u30fc',
+ u'\uff1f',
+ u'\u79c1\u306e\u3058\u3083\u306a\u3044\u3093\u3067\u3059\u3051\u3069',
+ u'\u3001',
+ u'\u3061\u3087\u3063\u3068\u77e5\u308a\u305f\u304f\u3066',
+ u'\u3002']
+
+In [7]: from nltk.tokenize import WordPunctTokenizer
+
+In [8]: wpt = WordPunctTokenizer().tokenize(f)
+
+In [9]: wpt
+Out[9]: 
+['purple',
+ 'is',
+ 'the',
+ 'new',
+ 'pink',
+ ',',
+ 'blue',
+ ',',
+ 'green',
+ ',',
+ 'red',
+ ',',
+ 'gold',
+ 'ghadw',
+ ',',
+ 'hfuqi',
+ 'EVERYTHING',
+ '!',
+ ':',
+ 'D',
+ 'JUSTIN',
+ 'BIEBER',
+ 'IS',
+ 'TAKING',
+ 'OVER',
+ 'THE',
+ 'WORLD',
+ 'BITCHEZZ',
+ ':',
+ 'D',
+ 'CHEF',
+ 'DE',
+ 'PRODUIT',
+ 'H',
+ '/',
+ 'F',
+ ':',
+ 'Filiale',
+ 'du',
+ 'groupe',
+ 'Air',
+ 'Liquide',
+ ',',
+ 'ORKYN',
+ 'est',
+ 'le',
+ 'leader',
+ 'en',
+ 'France',
+ 'des',
+ 'services',
+ '\xc3',
+ 'la',
+ 'personne',
+ 'po',
+ '...',
+ 'http',
+ '://',
+ 'bit',
+ '.',
+ 'ly',
+ '/',
+ 'fYRplv',
+ 'Pledge',
+ 'to',
+ 'cut',
+ 'council',
+ 'tax',
+ 'by',
+ '1',
+ '%',
+ 'http',
+ '://',
+ 'bbc',
+ '.',
+ 'in',
+ '/',
+ 'hlRSDO',
+ 'Customer',
+ 'Service',
+ '-',
+ 'BPS',
+ 'Sr',
+ 'Rep',
+ 'in',
+ '$',
+ 'vacancy',
+ '.',
+ 'state',
+ ',',
+ 'Lincoln',
+ ',',
+ 'http',
+ '://',
+ 'www',
+ '.',
+ 'americanhomeagentassociation',
+ '.',
+ 'org',
+ '/',
+ 'career',
+ '/',
+ '27773',
+ '#',
+ 'career',
+ '#',
+ 'jobs',
+ '@',
+ 'sreesanth',
+ 'Congrats',
+ '..',
+ 'Hope',
+ 'you',
+ 'will',
+ 'bowl',
+ 'India',
+ 'to',
+ 'victory',
+ 'in',
+ 'the',
+ 'world',
+ 'cup',
+ 'final',
+ '..',
+ 'Playboy',
+ 'South',
+ 'Africa',
+ 'launches',
+ 'next',
+ 'month',
+ '|',
+ 'Entertainment',
+ '|',
+ 'Zoopy',
+ '-',
+ 'The',
+ 'World',
+ 'in',
+ '90',
+ 'Seconds',
+ 'http',
+ '://',
+ 'www',
+ '.',
+ 'zoopy',
+ '.',
+ 'com',
+ '/',
+ 'entertainment',
+ '/',
+ '222',
+ '/',
+ 'playboy',
+ '-',
+ 'media',
+ '-',
+ 'launch',
+ '\xe2',
+ '\x80\xa6',
+ 'via',
+ '@',
+ 'zoopy',
+ '2',
+ 'am',
+ '!',
+ 'TIME',
+ 'TO',
+ 'SLEEP',
+ ':)',
+ 'Goodnight',
+ 'world',
+ ',',
+ 'see',
+ 'ya',
+ 'in',
+ 'about',
+ '6',
+ 'hours',
+ '.',
+ '@',
+ 'GladamFan',
+ 'You',
+ 'and',
+ 'your',
+ 'FOREIGN',
+ 'languages',
+ '.....',
+ ';',
+ 'D',
+ '#',
+ 'pleasestopbeforeihaveaseizure',
+ '=',
+ 'D\xe2',
+ '\x80\x9d',
+ 'Lol',
+ 'i',
+ 'phone\xe8\xb2',
+ '\xb7',
+ '\xe3',
+ '\x81\x86',
+ '\xe3',
+ '\x81\xae',
+ '\xe3',
+ '\x81\xab',
+ '\xe4',
+ '\xb8\x80',
+ '\xe7',
+ '\x95',
+ '\xaa\xe5',
+ '\xae\x89',
+ '\xe3',
+ '\x81\x84',
+ '\xe6',
+ '\x96',
+ '\xb9\xe6\xb3',
+ '\x95',
+ '\xe3',
+ '\x81\xa3',
+ '\xe3',
+ '\x81\xa6',
+ '\xe3',
+ '\x81\x94',
+ '\xe5',
+ '\xad\x98',
+ '\xe7',
+ '\x9f\xa5',
+ '\xe3',
+ '\x81',
+ '\xaa\xe6',
+ '\x96',
+ '\xb9\xe3',
+ '\x81\x84',
+ '\xe3',
+ '\x82\x89',
+ '\xe3',
+ '\x81\xa3',
+ '\xe3',
+ '\x81\x97',
+ '\xe3',
+ '\x82\x83',
+ '\xe3',
+ '\x82\x8a',
+ '\xe3',
+ '\x81',
+ '\xbe\xe3',
+ '\x81\x9b',
+ '\xe3',
+ '\x82\x93',
+ '\xe3',
+ '\x81\x8b',
+ '\xe3',
+ '\x83',
+ '\xbc\xef\xbc',
+ '\x9f',
+ '\xe7',
+ '\xa7\x81',
+ '\xe3',
+ '\x81\xae',
+ '\xe3',
+ '\x81\x98',
+ '\xe3',
+ '\x82\x83',
+ '\xe3',
+ '\x81',
+ '\xaa\xe3',
+ '\x81\x84',
+ '\xe3',
+ '\x82\x93',
+ '\xe3',
+ '\x81\xa7',
+ '\xe3',
+ '\x81\x99',
+ '\xe3',
+ '\x81\x91',
+ '\xe3',
+ '\x81\xa9',
+ '\xe3',
+ '\x80\x81',
+ '\xe3',
+ '\x81\xa1',
+ '\xe3',
+ '\x82\x87',
+ '\xe3',
+ '\x81\xa3',
+ '\xe3',
+ '\x81\xa8',
+ '\xe7',
+ '\x9f\xa5',
+ '\xe3',
+ '\x82\x8a',
+ '\xe3',
+ '\x81\x9f',
+ '\xe3',
+ '\x81\x8f',
+ '\xe3',
+ '\x81\xa6',
+ '\xe3',
+ '\x80\x82']
+
+The most obvious difference between the two tokenizers is that the purpose-built one 
+(TweetTokenizer) appears to be aware of the use of punctuation in hashtags and URLs and 
+treats hashtags and URLs as single tokens. The WordPunctTokenizer breaks URLs down into 
+enormous messes of meaningless punctuation, demonstrating that a tokenizer's function 
+must fit its context for meaningful output to be produced. My Python had trouble with the 
+Unicode Japanese tweet (last line), but it is interesting that the two tokenizers broke 
+the Unicode tweet up differently.  
