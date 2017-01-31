@@ -32,16 +32,24 @@ dictionary with relevant words. The stop words are from the NLTK corpus
 of stopwords.
 '''
 def FilterDictionary (wordDictionary):
-    #stopWords = set(stopwords.words('english'))
+    stopWords = set(stopwords.words('english'))
     tempDictionary = wordDictionary.copy()
 
     for key in wordDictionary:
-        #if key in stopWords:
-        if len(key) < 3:
+        if key in stopWords:
             del tempDictionary[key]
             #tempDictionary[key] = 0
 
-    return tempDictionary
+    tempDictionary = OrderedDict(sorted(tempDictionary.items(), key=lambda t: t[1], reverse=True))
+    finalDictionary = tempDictionary.copy()
+
+    c = 0
+    for key in tempDictionary:
+        if c > 2500:
+            del finalDictionary[key]
+        c = c + 1
+
+    return finalDictionary
 
 #######################################################################################
 '''
@@ -50,12 +58,15 @@ nonspam. Create a dictionary with each unique word as a key and a count
 for the unique word frequencies.
 '''
 def CreateDictionary (emailList):
+    spamTrain = []
+    nonspamTrain = []
     wordDictionary = {}
     dirPath = ['./spam-train/', './nonspam-train/']
 
     for i in range(0, 2):
         emailListSz = len(emailList[i])
         for j in range(0, emailListSz):
+            dictionary = {}
             txtFile = open(dirPath[i]+emailList[i][j], 'r')
             for line in txtFile:
                 for word in line.split():
@@ -63,10 +74,19 @@ def CreateDictionary (emailList):
                         wordDictionary[word] = 1
                     else:
                         wordDictionary[word] = wordDictionary[word] + 1
+
+                    if word not in dictionary:
+                        dictionary[word] = 1
+                    else:
+                        dictionary[word] = dictionary[word] + 1
+
+            if i % 2 == 0:
+                spamTrain.append(dictionary)
+            else:
+                nonspamTrain.append(dictionary)
             txtFile.close()
 
     wordDictionary = FilterDictionary(wordDictionary)
-    wordDictionary = OrderedDict(sorted(wordDictionary.items(), key=lambda t: t[1], reverse=True))
     
     '''
     c = 0
@@ -77,13 +97,16 @@ def CreateDictionary (emailList):
         print(key, value)
     '''
 
-    return wordDictionary
+    return wordDictionary, spamTrain, nonspamTrain
 
 #######################################################################################
 '''
 '''
 def FindDictIndex (word, wordDictionary):
     index = 0
+
+    if word not in wordDictionary:
+        return -1
 
     for key in wordDictionary:
         if key != word:
@@ -93,12 +116,24 @@ def FindDictIndex (word, wordDictionary):
 
     return -1
 
+def ConvertFeatures (dictionary, wordDictionary):
+    orderDictionary = {}
+
+    for word in dictionary:
+        idx = FindDictIndex(word, wordDictionary)
+        if idx != -1:
+            orderDictionary[idx] = dictionary[word]
+
+    return OrderedDict(sorted(orderDictionary.items(), key=lambda t: t[0]))
+
+def WriteToFile (docID, dictionary, outFile):
+    for key in dictionary:
+        outFile.write(str(docID)+' '+str(key)+' '+str(dictionary[key])+'\n')
+
 #######################################################################################
 '''
 '''
-def FeatureFile (wordDictionary, emailList):
-    dirPath = ['./spam-train/', './nonspam-train/']
-
+def FeatureFile (wordDictionary, spamTrain, nonspamTrain):
     try:
         if os.path.exists('spam-features.txt'):
             os.remove('spam-features.txt')
@@ -107,42 +142,25 @@ def FeatureFile (wordDictionary, emailList):
         
         spamFile = open('spam-features.txt', 'w+')
         nonspamFile = open('nonspam-features.txt', 'w+')
-
-        for i in range(1, 2):
-            emailListSz = len(emailList[i])
-            for j in range(0, emailListSz):
-                dictionary = {}
-                txtFile = open(dirPath[i]+emailList[i][j], 'r')
-                for line in txtFile:
-                    for word in line.split():
-                        dictIndex = FindDictIndex(word, wordDictionary)
-                        if dictIndex != -1:
-                            if dictIndex not in dictionary:
-                                dictionary[dictIndex] = 1
-                            else:
-                                dictionary[dictIndex] = dictionary[dictIndex] + 1
-                
-                txtFile.close()
-
-                dictionary = OrderedDict(sorted(dictionary.items(), key=lambda t: t[0]))
-
-                for key, value in dictionary.items():
-                    c = 0
-                    for word in wordDictionary:
-                        if c == key:
-                            x = word
-                            break
-                        c = c + 1
-
-                    print(key, value, x)
-                print('\n------------------------------------------------------\n')
-
-        spamFile.close()
-        nonspamFile.close()
     except IOError:
         print('ERROR: I/O exception when opening features.txt')
 
+    docID = 1
+    for dictionary in nonspamTrain:
+        dictionary = ConvertFeatures(dictionary, wordDictionary)
+        WriteToFile(docID, dictionary, nonspamFile)
+        docID = docID + 1
+
+    docID = 1
+    for dictionary in spamTrain:
+        dictionary = ConvertFeatures(dictionary, wordDictionary)
+        WriteToFile(docID, dictionary, spamFile)
+        docID = docID + 1
+
+    spamFile.close()
+    nonspamFile.close()
+
 if __name__ == '__main__':
     emailList = GetFiles()
-    wordDictionary = CreateDictionary(emailList)
-    FeatureFile(wordDictionary, emailList)
+    wordDictionary, spamTrain, nonspamTrain = CreateDictionary(emailList)
+    FeatureFile(wordDictionary, spamTrain, nonspamTrain)
