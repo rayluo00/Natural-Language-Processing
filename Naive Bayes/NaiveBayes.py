@@ -12,6 +12,11 @@ from nltk.corpus import stopwords
 
 #######################################################################################
 '''
+Get the names of all the txt files in each of the training directories.
+Return a list containing the list of txt file names.
+
+list[0] = list of txtx file names from the spam training directory
+list[1] = list of txt file names from the nonspam training directory
 '''
 def GetFiles ():
     spamTrainList = sorted(os.listdir('./spam-train'))
@@ -21,6 +26,9 @@ def GetFiles ():
 
 #######################################################################################
 '''
+Filter the vocabulary fictionary to remove any stop words. Improves the
+efficiency when only working with a dictionary with relevant words. The
+stop words are from the NLTK corpus of stopwords.
 '''
 def FilterDictionary (wordDictionary):
     stopWords = set(stopwords.words('english'))
@@ -34,6 +42,9 @@ def FilterDictionary (wordDictionary):
 
 #######################################################################################
 '''
+Iterate through each txt file from both training directories of spam or 
+nonspam. Create a dictionary with each unique word as a key and a count
+for the unique word frequencies.
 '''
 def ParseFiles (emailList):
     dirPath = ['./spam-train/', './nonspam-train/']
