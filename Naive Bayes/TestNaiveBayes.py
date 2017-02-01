@@ -1,7 +1,17 @@
+'''
+TestNaiveBayes.py
+
+Authors: Raymond Weiming Luo, Ben Ellerby
+
+'''
+
 import os
 import math
 import NaiveBayes
 
+#######################################################################################
+'''
+'''
 def CalculateProb (dictionary, filteredDictionary, wordDictionary):
     condProbDict = {}
     denominator = sum(wordDictionary.values()) + 2500
@@ -26,16 +36,18 @@ def CalculateProb (dictionary, filteredDictionary, wordDictionary):
 
     return finalProb
 
-def PerformTest (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
+#######################################################################################
+'''
+'''
+def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
+    spamc = 0
+    spamc2 = 0
+    nonspamc = 0
+    nonspamc2 = 0
     spamTestList = []
     nonspamTestList = []
     testList = [sorted(os.listdir('./spam-test')), sorted(os.listdir('./nonspam-test'))]
     dirPath = ['./spam-test/', './nonspam-test/']
-
-    spamc = 0
-    nonspamc = 0
-    spamc2 = 0
-    nonspamc2 = 0
 
     for i in range(0, 2):
         testListSize = len(testList[i])
@@ -65,8 +77,5 @@ def PerformTest (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
                 else:
                     nonspamc2 = nonspamc2 + 1
 
-    print('SC: ',spamc, '| NSC: ',nonspamc)
-    print('SC2: ',spamc2,'| NSC2: ',nonspamc2)
-
-def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
-    PerformTest(filteredDictionary, spamWordDictionary, nonspamWordDictionary)
+    print('SPAM TEST    | SC: ',spamc, '| NSC: ',nonspamc)
+    print('NONSPAM TEST | SC: ',spamc2,'| NSC: ',nonspamc2)
