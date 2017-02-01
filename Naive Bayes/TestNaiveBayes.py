@@ -14,6 +14,7 @@ import NaiveBayes
 '''
 '''
 def CalculateProb (dictionary, filteredDictionary, wordDictionary):
+    condProbDict = {}
     finalProb = math.log10(0.5)
     denominator = sum(wordDictionary.values()) + 2500
 
