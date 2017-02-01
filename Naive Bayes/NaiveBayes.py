@@ -104,7 +104,6 @@ def CreateDictionary (emailList):
 '''
 '''
 def FindDictIndex (word, wordDictionary):
-
     if word not in wordDictionary:
         return -1
 
@@ -125,12 +124,9 @@ def ConvertFeatures (dictionary, wordDictionary):
     orderDictionary = {}
 
     for word in dictionary:
-        #print(word+'|'+str(dictionary[word]))
         idx = FindDictIndex(word, wordDictionary)
         if idx != -1:
             orderDictionary[idx] = dictionary[word]
-
-    #print('---------------------------------------------------------\n')
 
     return OrderedDict(sorted(orderDictionary.items(), key=lambda t: t[0]))
 

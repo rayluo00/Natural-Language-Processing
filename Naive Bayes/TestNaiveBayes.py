@@ -1,7 +1,8 @@
 '''
 TestNaiveBayes.py
 
-Authors: Raymond Weiming Luo, Ben Ellerby
+Authors: Raymond Weiming Luo
+         Ben Ellerby
 
 '''
 
@@ -13,9 +14,8 @@ import NaiveBayes
 '''
 '''
 def CalculateProb (dictionary, filteredDictionary, wordDictionary):
-    condProbDict = {}
-    denominator = sum(wordDictionary.values()) + 2500
     finalProb = math.log10(0.5)
+    denominator = sum(wordDictionary.values()) + 2500
 
     for word in dictionary.keys():
         if word not in wordDictionary:
@@ -29,7 +29,7 @@ def CalculateProb (dictionary, filteredDictionary, wordDictionary):
 
     for word in dictionary.keys():
         wordExponent = dictionary[word]
-        wordProb = condProbDict[word] ** wordExponent
+        wordProb = (condProbDict[word] ** wordExponent)
 
         if wordProb > 0:
             finalProb = finalProb + math.log10(wordProb)
@@ -44,8 +44,6 @@ def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
     spamc2 = 0
     nonspamc = 0
     nonspamc2 = 0
-    spamTestList = []
-    nonspamTestList = []
     testList = [sorted(os.listdir('./spam-test')), sorted(os.listdir('./nonspam-test'))]
     dirPath = ['./spam-test/', './nonspam-test/']
 
