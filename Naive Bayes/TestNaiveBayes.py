@@ -76,5 +76,5 @@ def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
                 else:
                     nonspamc2 = nonspamc2 + 1
 
-    print('SPAM TEST    | SC: ',spamc, '| NSC: ',nonspamc)
-    print('NONSPAM TEST | SC: ',spamc2,'| NSC: ',nonspamc2)
+    print('SPAM TEST    | SPAM: ',spamc, '| NONSPAM: ',nonspamc)
+    print('NONSPAM TEST | SPAM: ',spamc2,'| NONSPAM: ',nonspamc2)
