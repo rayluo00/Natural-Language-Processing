@@ -7,6 +7,7 @@ Authors: Raymond Weiming Luo
 '''
 
 import os
+import TestNaiveBayes
 from collections import OrderedDict
 from nltk.corpus import stopwords
 
@@ -45,11 +46,19 @@ def FilterDictionary (wordDictionary):
 
     c = 0
     for key in tempDictionary:
-        if c > 2500:
+        if c > 2499:
             del finalDictionary[key]
         c = c + 1
 
     return finalDictionary
+
+def AddInDictionary (word, dictionary):
+    if word not in dictionary:
+        dictionary[word] = 1
+    else:
+        dictionary[word] = dictionary[word] + 1
+
+    return dictionary
 
 #######################################################################################
 '''
@@ -61,6 +70,8 @@ def CreateDictionary (emailList):
     spamTrain = []
     nonspamTrain = []
     wordDictionary = {}
+    spamWordDictionary = {}
+    nonspamWordDictionary = {}
     dirPath = ['./spam-train/', './nonspam-train/']
 
     for i in range(0, 2):
@@ -70,15 +81,13 @@ def CreateDictionary (emailList):
             txtFile = open(dirPath[i]+emailList[i][j], 'r')
             for line in txtFile:
                 for word in line.split():
-                    if word not in wordDictionary:
-                        wordDictionary[word] = 1
-                    else:
-                        wordDictionary[word] = wordDictionary[word] + 1
+                    wordDictionary = AddInDictionary(word, wordDictionary)
+                    dictionary = AddInDictionary(word, dictionary)
 
-                    if word not in dictionary:
-                        dictionary[word] = 1
+                    if i % 2 == 0:
+                        spamWordDictionary = AddInDictionary(word, spamWordDictionary)
                     else:
-                        dictionary[word] = dictionary[word] + 1
+                        nonspamWordDictionary = AddInDictionary(word, nonspamWordDictionary)
 
             if i % 2 == 0:
                 spamTrain.append(dictionary)
@@ -86,27 +95,20 @@ def CreateDictionary (emailList):
                 nonspamTrain.append(dictionary)
             txtFile.close()
 
-    wordDictionary = FilterDictionary(wordDictionary)
     
-    '''
-    c = 0
-    for key, value in wordDictionary.items():
-        c = c + 1
-        #if c == 46:
-        #    print('-------------------------> ',key, value)
-        print(key, value)
-    '''
+    filteredDictionary = FilterDictionary(wordDictionary) 
 
-    return wordDictionary, spamTrain, nonspamTrain
+    return filteredDictionary, spamWordDictionary, nonspamWordDictionary, spamTrain, nonspamTrain
 
 #######################################################################################
 '''
 '''
 def FindDictIndex (word, wordDictionary):
-    index = 0
 
     if word not in wordDictionary:
         return -1
+
+    index = 0
 
     for key in wordDictionary:
         if key != word:
@@ -116,16 +118,25 @@ def FindDictIndex (word, wordDictionary):
 
     return -1
 
+#######################################################################################
+'''
+'''
 def ConvertFeatures (dictionary, wordDictionary):
     orderDictionary = {}
 
     for word in dictionary:
+        #print(word+'|'+str(dictionary[word]))
         idx = FindDictIndex(word, wordDictionary)
         if idx != -1:
             orderDictionary[idx] = dictionary[word]
 
+    #print('---------------------------------------------------------\n')
+
     return OrderedDict(sorted(orderDictionary.items(), key=lambda t: t[0]))
 
+#######################################################################################
+'''
+'''
 def WriteToFile (docID, dictionary, outFile):
     for key in dictionary:
         outFile.write(str(docID)+' '+str(key)+' '+str(dictionary[key])+'\n')
@@ -133,34 +144,37 @@ def WriteToFile (docID, dictionary, outFile):
 #######################################################################################
 '''
 '''
-def FeatureFile (wordDictionary, spamTrain, nonspamTrain):
-    try:
-        if os.path.exists('spam-features.txt'):
-            os.remove('spam-features.txt')
-        if os.path.exists('nonspam-features.txt'):
-            os.remove('nonspam-features.txt')
-        
+def FeatureFile (filteredDictionary, spamTrain, nonspamTrain):
+    try: 
         spamFile = open('spam-features.txt', 'w+')
         nonspamFile = open('nonspam-features.txt', 'w+')
+        dictionaryFile = open('dictionary.txt', 'w+')
     except IOError:
         print('ERROR: I/O exception when opening features.txt')
 
+    docID = 0
+    for word in filteredDictionary:
+        dictionaryFile.write(str(docID)+' '+word+' '+str(filteredDictionary[word])+'\n')
+        docID = docID + 1
+
     docID = 1
     for dictionary in nonspamTrain:
-        dictionary = ConvertFeatures(dictionary, wordDictionary)
+        dictionary = ConvertFeatures(dictionary, filteredDictionary)
         WriteToFile(docID, dictionary, nonspamFile)
         docID = docID + 1
 
     docID = 1
     for dictionary in spamTrain:
-        dictionary = ConvertFeatures(dictionary, wordDictionary)
+        dictionary = ConvertFeatures(dictionary, filteredDictionary)
         WriteToFile(docID, dictionary, spamFile)
         docID = docID + 1
 
     spamFile.close()
     nonspamFile.close()
+    dictionaryFile.close()
 
 if __name__ == '__main__':
     emailList = GetFiles()
-    wordDictionary, spamTrain, nonspamTrain = CreateDictionary(emailList)
-    FeatureFile(wordDictionary, spamTrain, nonspamTrain)
+    filteredDictionary, spamWordDictionary, nonspamWordDictionary, spamTrain, nonspamTrain = CreateDictionary(emailList)
+    FeatureFile(filteredDictionary, spamTrain, nonspamTrain)
+    TestNaiveBayes.Testing(filteredDictionary, spamWordDictionary, nonspamWordDictionary)
