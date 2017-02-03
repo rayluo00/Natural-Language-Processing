@@ -4,6 +4,13 @@ NaiveBayes.py
 Authors: Raymond Weiming Luo
          Ben Ellerby
 
+The program is trained by the training directory of spam and nonspam
+to create a dictionary of which words are more frequent in a spam or
+nonspam email. Additionally, the entire dictionary is composed of words
+found in spam and nonspam emails of the training and testing set. Also,
+a feature file can be created to map the document ID, word ID and word
+frequencie.
+
 '''
 
 import os

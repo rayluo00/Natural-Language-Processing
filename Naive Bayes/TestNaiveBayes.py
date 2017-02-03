@@ -4,6 +4,12 @@ TestNaiveBayes.py
 Authors: Raymond Weiming Luo
          Ben Ellerby
 
+This is a testing program to calculate the probrabilities of the txt
+files in the test directories and determine if they are a spam or 
+nonspam email. The probrabiliy calculations is based off the Naive
+Bayes theorem and the output is a 2x2 positive/negative table. Along
+with the precision, recall and f-score values.
+
 '''
 
 import os
