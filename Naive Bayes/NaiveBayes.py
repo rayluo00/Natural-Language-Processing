@@ -14,23 +14,24 @@ from nltk.corpus import stopwords
 #######################################################################################
 '''
 Get the names of all the txt files in each of the training directories.
-Return a list containing the list of txt file names.
 
-list[0] = list of txtx file names from the spam training directory
-list[1] = list of txt file names from the nonspam training directory
+list[0] = list of txt names from spam train directory
+list[1] = list of txt names from nonspam train directory
+list[2] = list of txt names from spam test directory
+list[3] = list of txt names from nonspam test directory
 '''
 def GetFiles ():
     spamTrainList = sorted(os.listdir('./spam-train'))
     nonSpamTrainList = sorted(os.listdir('./nonspam-train'))
+    spamTestList = sorted(os.listdir('./spam-test'))
+    nonspamTestList = sorted(os.listdir('./nonspam-test'))
 
-    return [spamTrainList, nonSpamTrainList]
+    return [spamTrainList, nonSpamTrainList, spamTestList, nonspamTestList]
 
 #######################################################################################
 '''
-Filter the vocabulary dictionary to modify the stop words by decreasing 
-their relevance. Improves the efficiency when only working with a 
-dictionary with relevant words. The stop words are from the NLTK corpus 
-of stopwords.
+Filter out the stopwords from the vocabulary dictionary and limit the words
+to the top 2500 frequent words.
 '''
 def FilterDictionary (wordDictionary):
     stopWords = set(stopwords.words('english'))
@@ -39,19 +40,25 @@ def FilterDictionary (wordDictionary):
     for key in wordDictionary:
         if key in stopWords:
             del tempDictionary[key]
-            #tempDictionary[key] = 0
 
     tempDictionary = OrderedDict(sorted(tempDictionary.items(), key=lambda t: t[1], reverse=True))
-    finalDictionary = tempDictionary.copy()
+    finalDictionary = OrderedDict()
 
     c = 0
     for key in tempDictionary:
         if c > 2499:
-            del finalDictionary[key]
+            return finalDictionary
+        else:
+            finalDictionary.update({key:tempDictionary[key]})
         c = c + 1
 
     return finalDictionary
 
+#######################################################################################
+'''
+Add the word into the dictionary if it doesn't contain it. A newly added
+word has value 1, otherwise it increments the value by 1.
+'''
 def AddInDictionary (word, dictionary):
     if word not in dictionary:
         dictionary[word] = 1
@@ -62,9 +69,8 @@ def AddInDictionary (word, dictionary):
 
 #######################################################################################
 '''
-Iterate through each txt file from both training directories of spam or 
-nonspam. Create a dictionary with each unique word as a key and a count
-for the unique word frequencies.
+Iterate through each txt file from the training directories. Create a 
+dictionary with each unique word as a key and frequencies count.
 '''
 def CreateDictionary (emailList):
     spamTrain = []
@@ -72,9 +78,9 @@ def CreateDictionary (emailList):
     wordDictionary = {}
     spamWordDictionary = {}
     nonspamWordDictionary = {}
-    dirPath = ['./spam-train/', './nonspam-train/']
+    dirPath = ['./spam-train/', './nonspam-train/', './spam-test/', './nonspam-test/']
 
-    for i in range(0, 2):
+    for i in range(0, 4):
         emailListSz = len(emailList[i])
         for j in range(0, emailListSz):
             dictionary = {}
@@ -84,17 +90,17 @@ def CreateDictionary (emailList):
                     wordDictionary = AddInDictionary(word, wordDictionary)
                     dictionary = AddInDictionary(word, dictionary)
 
-                    if i % 2 == 0:
+                    if i == 0:
                         spamWordDictionary = AddInDictionary(word, spamWordDictionary)
-                    else:
+                    elif i == 1:
                         nonspamWordDictionary = AddInDictionary(word, nonspamWordDictionary)
 
-            if i % 2 == 0:
+            if i == 0:
                 spamTrain.append(dictionary)
-            else:
+            elif i == 1:
                 nonspamTrain.append(dictionary)
-            txtFile.close()
 
+            txtFile.close()
     
     filteredDictionary = FilterDictionary(wordDictionary) 
 
@@ -102,14 +108,15 @@ def CreateDictionary (emailList):
 
 #######################################################################################
 '''
+Find the index of the word in the ordered dictionary. Return index
+of the word, else return -1 if the word isn't in the dictionary.
 '''
 def FindDictIndex (word, wordDictionary):
     if word not in wordDictionary:
         return -1
-
+    
     index = 0
-
-    for key in wordDictionary:
+    for key in wordDictionary.keys():
         if key != word:
             index = index + 1
         else:
@@ -119,19 +126,23 @@ def FindDictIndex (word, wordDictionary):
 
 #######################################################################################
 '''
+Convert the dictionary of words into the syntax of for a feature
+file. Every word is replaced by the index in the dicitonary of all 
+words.
 '''
 def ConvertFeatures (dictionary, wordDictionary):
     orderDictionary = {}
 
     for word in dictionary:
         idx = FindDictIndex(word, wordDictionary)
-        if idx != -1:
+        if idx > -1:
             orderDictionary[idx] = dictionary[word]
 
     return OrderedDict(sorted(orderDictionary.items(), key=lambda t: t[0]))
 
 #######################################################################################
 '''
+Write document ID, word and value into a txt file.
 '''
 def WriteToFile (docID, dictionary, outFile):
     for key in dictionary:
@@ -139,6 +150,8 @@ def WriteToFile (docID, dictionary, outFile):
 
 #######################################################################################
 '''
+Find each word frequencies and convert the word to the index postion
+of the word dictionary. Write output to the txt file.
 '''
 def FeatureFile (filteredDictionary, spamTrain, nonspamTrain):
     try: 
@@ -172,5 +185,5 @@ def FeatureFile (filteredDictionary, spamTrain, nonspamTrain):
 if __name__ == '__main__':
     emailList = GetFiles()
     filteredDictionary, spamWordDictionary, nonspamWordDictionary, spamTrain, nonspamTrain = CreateDictionary(emailList)
-    FeatureFile(filteredDictionary, spamTrain, nonspamTrain)
-    TestNaiveBayes.Testing(filteredDictionary, spamWordDictionary, nonspamWordDictionary)
+    #FeatureFile(filteredDictionary, spamTrain, nonspamTrain)
+    TestNaiveBayes.Testing(filteredDictionary, spamWordDictionary, nonspamWordDictionary, emailList)

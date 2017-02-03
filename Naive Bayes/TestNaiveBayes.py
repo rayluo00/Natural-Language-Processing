@@ -12,10 +12,13 @@ import NaiveBayes
 
 #######################################################################################
 '''
+Calculate the probrability of the given dictionary to determine if the
+dictionary is a spam or nonspam email. The probrability is an 
+implementation of the Naive Bayes theorem.
 '''
-def CalculateProb (dictionary, filteredDictionary, wordDictionary):
+def CalculateProb (dictionary, filteredDictionary, wordDictionary, prior):
     condProbDict = {}
-    finalProb = math.log10(0.5)
+    finalProb = math.log10(prior)
     denominator = sum(wordDictionary.values()) + 2500
 
     for word in dictionary.keys():
@@ -39,14 +42,22 @@ def CalculateProb (dictionary, filteredDictionary, wordDictionary):
 
 #######################################################################################
 '''
+Testing function to go through the testing set and determine if the file is a 
+spam or nonspam email. Output the 2x2 positive/negative table, precision, 
+recall, and f-value.
 '''
-def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
-    spamc = 0
-    spamc2 = 0
-    nonspamc = 0
-    nonspamc2 = 0
+def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary, emailList):
+    tp = 0
+    fn = 0
+    fp = 0
+    tn = 0
     testList = [sorted(os.listdir('./spam-test')), sorted(os.listdir('./nonspam-test'))]
     dirPath = ['./spam-test/', './nonspam-test/']
+    spamTrainSize = len(emailList[0])
+    nonspamTrainSize = len(emailList[1])
+    totalTrainSize = spamTrainSize + nonspamTrainSize
+    spamPrior = spamTrainSize / totalTrainSize
+    nonspamPrior = nonspamTrainSize / totalTrainSize
 
     for i in range(0, 2):
         testListSize = len(testList[i])
@@ -62,19 +73,32 @@ def Testing (filteredDictionary, spamWordDictionary, nonspamWordDictionary):
 
             txtFile.close()
 
-            spamProb = CalculateProb(dictionary, filteredDictionary, spamWordDictionary)
-            nonspamProb = CalculateProb(dictionary, filteredDictionary, nonspamWordDictionary)
+            spamProb = CalculateProb(dictionary, filteredDictionary, 
+                    spamWordDictionary, spamPrior)
+            nonspamProb = CalculateProb(dictionary, filteredDictionary, 
+                    nonspamWordDictionary, nonspamPrior)
 
             if spamProb > nonspamProb:
                 if i == 0:
-                    spamc = spamc + 1
+                    tp = tp + 1
                 else:
-                    spamc2 = spamc2 + 1
+                    fn = fn + 1
             else:
                 if i == 0:
-                    nonspamc = nonspamc + 1
+                    fp = fp + 1
                 else:
-                    nonspamc2 = nonspamc2 + 1
+                    tn = tn + 1
 
-    print('SPAM TEST    | SPAM: ',spamc, '| NONSPAM: ',nonspamc)
-    print('NONSPAM TEST | SPAM: ',spamc2,'| NONSPAM: ',nonspamc2)
+    print('        ---------------------')
+    print('SPAM    | tp: {:>3} | fp: {:>3} |'.format(tp,fp))
+    print('        ---------------------')
+    print('NONSPAM | fn: {:>3} | tn: {:>3} |'.format(fn,tn))
+    print('        ---------------------\n')
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    fscore = (2 * precision * recall) / (precision + recall)
+
+    print('precision: %.5f' % precision)
+    print('recall   : %.5f' % recall)
+    print('f-score  : %.5f' % fscore)
