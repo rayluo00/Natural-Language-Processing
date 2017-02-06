@@ -1,3 +1,34 @@
+Naive Bayes
+
+Author: Raymond Weiming Luo
+        Ben Ellerby
+
+CSCI 404 - Natural Language Processing
+
+========================================== OVERVIEW ==========================================
+This program will classify the email as a spam or nonspam
+email based of Naive Bayes theorem. The output displays a
+2x2 table for a positive/negative table, precision percentage,
+recall percentage, and f-score. After the program in trained
+from NaiveBayes.py, it will call a function from TestNaiveBayes.py
+to run a testing program with the testing set.
+
+IMPORTANT! To run the program, it uses Python3 and requires
+a spam and nonspam training and testing set directories.
+Provided are the training and testing sets labelled as,
+"spam-train", "nonspam-train", "spam-test", "nonspam-test".
+The four directories must be located in the same directory 
+as the NaiveBayes.py and TestNaiveBayes.pv files.
+
+=========================================== FILES ============================================
+NaiveBayes.py
+TestNaiveBayes.py
+/spam-train
+/nonspam-train
+/spam-test
+/nonspam-test
+
+======================================== DATASET NOTE ========================================
 This dataset comes from the Lingspam Dataset, 
 specifically, the lemm-stop subset. The emails have been
 edited to remove punctuation and standalone numbers.
