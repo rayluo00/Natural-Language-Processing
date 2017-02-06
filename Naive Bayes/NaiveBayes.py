@@ -22,10 +22,10 @@ from nltk.corpus import stopwords
 '''
 Get the names of all the txt files in each of the training directories.
 
-list[0] = list of txt names from spam train directory
-list[1] = list of txt names from nonspam train directory
-list[2] = list of txt names from spam test directory
-list[3] = list of txt names from nonspam test directory
+list[0] = txt names from spam train
+list[1] = txt names from nonspam train
+list[2] = txt names from spam test
+list[3] = txt names from nonspam test
 '''
 def GetFiles ():
     spamTrainList = sorted(os.listdir('./spam-train'))
