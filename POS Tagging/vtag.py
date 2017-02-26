@@ -1,5 +1,4 @@
 from __future__ import division
-import nltk
 import math
 
 f = open("data/en/entrain.txt").read().split()
@@ -12,8 +11,11 @@ word_tag_counts = {}
 tag_counts = {}
 cond_tag_counts = {}
 total_word_count = 0
+tag_tag_sing = {}
+word_tag_sing = {}
 
 
+# train
 for line in f:
         l.append(line.split("/"))
 
@@ -22,11 +24,15 @@ for line in l:
 
         if line[0] not in word_tag_counts:
                 word_tag_counts[line[0]] = {line[1]: 1}
+                word_tag_sing[line[1]] = word_tag_sing.get(line[1], 0) + 1
         else:
                 if line[1] not in word_tag_counts[line[0]]:
                         word_tag_counts[line[0]][line[1]] = 1
+                        word_tag_sing[line[1]] = word_tag_sing.get(line[1], 0) + 1
                 else:
                         word_tag_counts[line[0]][line[1]] += 1
+                        if word_tag_counts[line[0]][line[1]] == 2:
+                                word_tag_sing[line[1]] -= 1
 
 raw_words = []
 for line in f_raw:
@@ -45,11 +51,15 @@ for i in range(len(l)):
                 prev = l[i-1][1]
                 if current not in cond_tag_counts:
                         cond_tag_counts[current] = {prev: 1}
+                        tag_tag_sing[prev] = tag_tag_sing.get(prev, 0) + 1
                 else:
                         if prev not in cond_tag_counts[current]:
                                 cond_tag_counts[current][prev] = 1
+                                tag_tag_sing[prev] = tag_tag_sing.get(prev, 0) + 1
                         else:
                                 cond_tag_counts[current][prev] += 1
+                                if cond_tag_counts[current][prev] == 2:
+                                        tag_tag_sing[prev] -= 1
 
 all_tags = []
 everyTag = []
@@ -72,6 +82,14 @@ for w in word_tag_counts.keys():
                         else:
                                 unique_tag_words[t] += 1
 
+# singleton functions
+def word_tag_sing_count(tag):
+        return word_tag_sing[tag]
+
+def tag_tag_sing_count(tag):
+        return tag_tag_sing[tag]
+
+# probability helper functions
 def prob_tag_given_word(tag, word):
         smooth = 1
         denom = len(everyTag)
@@ -95,6 +113,7 @@ def prob_word_given_tag(tag, word):
 
 def prob_tag_given_tag(current, prev):
         if prev not in cond_tag_counts[current].keys():
+                #old smoothing
                 return math.log(1 / len(cond_tag_counts[current].keys()))
         return math.log((cond_tag_counts[current][prev])+1) - math.log(sum(cond_tag_counts[current].values()))
 
@@ -167,6 +186,7 @@ def prob_wt(tag, word):
 
         return math.log((count_tw + lmda * backoff) / (count_t + lmda))
 
+# prepare test data
 test = open("data/en/entest.txt").read().split()
 #test = open("data/ic/ic2test.txt").read().split()
 
@@ -187,7 +207,6 @@ for i in range(1, len(words)):
                 for prev_tag in tag_dict(words[i-1]):
                         p = prob_tag_given_tag(current_tag, prev_tag) + prob_word_given_tag(current_tag, words[i])
                         new_mu = mu[prev_tag][i-1] + p
-
                         if new_mu > mu[current_tag][i]:
                                 mu[current_tag][i] = new_mu
                                 backpointer[i] = prev_tag
@@ -200,77 +219,48 @@ for i in range(1, len(words)):
                                 mu2[current_tag][i] = new_mu2
                                 backpointer2[i] = prev_tag
 
-comparisons = 0
-total_matches = 0
-known_comparisons = 0
-known_matches = 0
-unknown_comparisons = 0
-unknown_matches = 0
-novel_comparisons = 0
+# check accuracy
+def calc_accuracy (backpointer):
+        comparisons = 0
+        total_matches = 0
+        known_comparisons = 0
+        known_matches = 0
+        unknown_comparisons = 0
+        unknown_matches = 0
+        novel_comparisons = 0
 
-backpointer = backpointer[1:]
+        backpointer = backpointer[1:]
 
-i = 0
-unique_words = []
-for a,s in zip(backpointer[1:], tags):
-        comparisons += 1
-        if words[i] in word_tag_counts.keys():
-                # known
-                known_comparisons += 1
-                if backpointer[i] == tags[i]:
-                        known_matches += 1
-                        total_matches += 1
+        i = 0
+        unique_words = []
+        for a,s in zip(backpointer[1:], tags):
+                comparisons += 1
+                if words[i] in word_tag_counts.keys():
+                        # known
+                        known_comparisons += 1
+                        if backpointer[i] == tags[i]:
+                                known_matches += 1
+                                total_matches += 1
+                else:
+                        # unknown
+                        if words[i] not in unique_words:
+                                unique_words.append(words[i])
+                                #unknown_comparisons += 1
+                        if backpointer[i] == tags[i]:
+                                unknown_matches += 1
+                                total_matches += 1
+                i += 1
+
+        if len(unique_words) == 0:
+                novel_comparisons = known_comparisons
         else:
-                # unknown
-                if words[i] not in unique_words:
-                        unique_words.append(words[i])
-                        #unknown_comparisons += 1
-                if backpointer[i] == tags[i]:
-                        unknown_matches += 1
-                        total_matches += 1
-        i += 1
+                novel_comparisons = len(unique_words)
 
-if len(unique_words) == 0:
-        novel_comparisons = known_comparisons
-else:
-        novel_comparisons = len(unique_words)
+        print('Tagging accuracy (Viterbi decoding): ', (total_matches/comparisons)*100, 
+                '% (known: ', (known_matches/known_comparisons)*100, 
+                '% novel: ', (unknown_matches/novel_comparisons)*100, '%)\n')
 
-print('Tagging accuracy (Viterbi decoding): ', (total_matches/comparisons)*100, 
-        '% (known: ', (known_matches/known_comparisons)*100, 
-        '% novel: ', (unknown_matches/novel_comparisons)*100, '%)')
-
-i = 0
-comparisons2 = 0
-total_matches2 = 0
-known_comparisons2 = 0
-known_matches2 = 0
-unknown_comparisons2 = 0
-unknown_matches2 = 0
-novel_comparisons2 = 0
-backpointer2 = backpointer2[1:]
-unique_words2 = []
-for a,s in zip(backpointer2[1:], tags):
-        comparisons2 += 1
-        if words[i] in word_tag_counts.keys():
-                # known
-                known_comparisons2 += 1
-                if backpointer2[i] == tags[i]:
-                        known_matches2 += 1
-                        total_matches2 += 1
-        else:
-                # unknown
-                if words[i] not in unique_words2:
-                        unique_words2.append(words[i])
-                if backpointer2[i] == tags[i]:
-                        unknown_matches2 += 1
-                        total_matches2 += 1
-        i += 1
-
-if len(unique_words) == 0:
-        novel_comparisons2 = known_comparisons2
-else:
-        novel_comparisons2 = len(unique_words)
-
-print('Tagging accuracy (Viterbi decoding): ', (total_matches2/comparisons2)*100, 
-        '% (known: ', (known_matches2/known_comparisons2)*100, 
-        '% novel: ', (unknown_matches2/novel_comparisons2)*100, '%)')
+print('original viterbi accuracy')
+calc_accuracy(backpointer)
+print('\nviterbi with one-count smoothing accuracy')
+calc_accuracy(backpointer2)
