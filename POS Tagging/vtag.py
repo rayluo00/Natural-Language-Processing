@@ -1,9 +1,21 @@
 from __future__ import division
 import math
+import sys
+from sys import argv
 
-f = open("data/en/entrain.txt").read().split()
-#f = open("data/ic/ic2train.txt").read().split()
-f_raw = open("data/en/enraw.txt").read().split()
+if len(argv) < 3:
+        print('not enough arguments')
+        sys.exit(0)
+
+if argv[1] == 'entrain':
+        f = open("data/en/entrain.txt").read().split()
+        f_raw = open("data/en/enraw.txt").read().split()
+elif argv[1] == 'ic2train' or argv[1] == 'ictrain':
+        f = open("data/ic/"+argv[1]+".txt").read().split()
+        f_raw = []
+else:
+        print('invalid txt file')
+        sys.exit(0)
 
 l = []
 all_words = []
@@ -13,7 +25,6 @@ cond_tag_counts = {}
 total_word_count = 0
 tag_tag_sing = {}
 word_tag_sing = {}
-
 
 # train
 for line in f:
@@ -63,6 +74,7 @@ for i in range(len(l)):
 
 all_tags = []
 everyTag = []
+# get all unique tag referenced and every tag references
 for x in word_tag_counts.keys():
         for t in word_tag_counts[x]:
                 everyTag.append(t)
@@ -70,9 +82,11 @@ for x in word_tag_counts.keys():
                 if t not in all_tags:
                         all_tags.append(t)
 
+# compute the total of all the words in the training corpus
 for d in word_tag_counts.values():
         total_word_count += sum(d.values())
 
+# compute the count of all unique tags for each word that is referenced at most once
 unique_tag_words = {}
 for w in word_tag_counts.keys():
         for t in word_tag_counts[w]:
@@ -122,6 +136,7 @@ def tag_dict(word):
                 return all_tags
         return word_tag_counts[word].keys()
 
+# calculate the singleton of tag given tag
 def calc_tt_singleton(tag):
         count_unique = 1
 
@@ -131,6 +146,7 @@ def calc_tt_singleton(tag):
 
         return count_unique
 
+# probrability of current tag given previous tag
 def prob_tt(current, prev):
         # nums of prev tags associated with current tag
         if prev not in cond_tag_counts[current].keys():
@@ -154,6 +170,7 @@ def prob_tt(current, prev):
 
         return math.log((count_tt + lmda * backoff) / (count_t + lmda))
 
+# calculate the singleton for tag given word
 def calc_tw_singleton(tag):
         count_unique = 1
         if tag not in unique_tag_words:
@@ -163,6 +180,7 @@ def calc_tw_singleton(tag):
 
         return count_unique
 
+# probrability of tag given word
 def prob_wt(tag, word):
         # num of tag associated with current word
         if word not in word_tag_counts:
@@ -187,8 +205,10 @@ def prob_wt(tag, word):
         return math.log((count_tw + lmda * backoff) / (count_t + lmda))
 
 # prepare test data
-test = open("data/en/entest.txt").read().split()
-#test = open("data/ic/ic2test.txt").read().split()
+if argv[2] == 'entest':
+    test = open("data/en/entest.txt").read().split()
+elif argv[2] == 'ic2test' or argv[2] == 'ictest':
+    test = open("data/ic/"+argv[2]+".txt").read().split()
 
 words = [l.split("/")[0] for l in test]
 tags = [l.split("/")[1] for l in test]
@@ -205,16 +225,16 @@ backpointer2 = ['*' for x in range(len(words))]
 for i in range(1, len(words)):
         for current_tag in tag_dict(words[i]):
                 for prev_tag in tag_dict(words[i-1]):
+                        # original viterbi algorithm
                         p = prob_tag_given_tag(current_tag, prev_tag) + prob_word_given_tag(current_tag, words[i])
                         new_mu = mu[prev_tag][i-1] + p
                         if new_mu > mu[current_tag][i]:
                                 mu[current_tag][i] = new_mu
                                 backpointer[i] = prev_tag
 
-                        #########################################################################################
+                        # viterbi algorithm with one-count smoothing
                         p_one_smooth = prob_tt(current_tag, prev_tag) + prob_wt(current_tag, words[i])
                         new_mu2 = mu2[prev_tag][i-1] + p_one_smooth
-
                         if new_mu2 > mu2[current_tag][i]:
                                 mu2[current_tag][i] = new_mu2
                                 backpointer2[i] = prev_tag
@@ -227,7 +247,7 @@ def calc_accuracy (backpointer):
         known_matches = 0
         unknown_comparisons = 0
         unknown_matches = 0
-        novel_comparisons = 0
+        novel_comparisons = 1
 
         backpointer = backpointer[1:]
 
@@ -243,18 +263,21 @@ def calc_accuracy (backpointer):
                                 total_matches += 1
                 else:
                         # unknown
+                        unknown_comparisons += 1 
                         if words[i] not in unique_words:
                                 unique_words.append(words[i])
-                                #unknown_comparisons += 1
                         if backpointer[i] == tags[i]:
                                 unknown_matches += 1
                                 total_matches += 1
                 i += 1
 
-        if len(unique_words) == 0:
-                novel_comparisons = known_comparisons
+        if len(unique_words) > 0:
+                novel_comparisons += len(unique_words)
         else:
-                novel_comparisons = len(unique_words)
+                novel_comparisons = unknown_comparisons
+
+        if novel_comparisons == 0:
+                novel_comparisons = 1
 
         print('Tagging accuracy (Viterbi decoding): ', (total_matches/comparisons)*100, 
                 '% (known: ', (known_matches/known_comparisons)*100, 
