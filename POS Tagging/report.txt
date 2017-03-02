@@ -1,0 +1,28 @@
+To run the program, it will need two arguments where arg[1] is the name of the training corpus
+and arg[2] is the name of the testing corpus. The names of each corpus does not need the file
+extension Additionally, the training and testing corpus must be in a directory names 'data/en/' 
+or 'data/ic/' depending if the corpus is 'en' or 'ic'.
+
+An example of running the program is:
+    $ python3 vtag.py entrain entest
+
+Where the entrain.txt and entest.txt are located in ./data/en
+
+Our program is structured as suggested in the assignment description:
+
+- it reads the training data into memory and tabulates frequency data on the occurance of words with tags, tags with tags and singleton word-tag and tag-tag pairs
+- it reads the test data into memory and stores it in a data structure to be processed by the Viterbi algorithm
+- the Viterbi algorithm is executed, maintaining the mu matrix while using a handful of probability calculating functions that query the data structures containing frequencies to step through the data and sequentially fill the matrix, all while keeping track of backpointers representing the chosen tags
+- it computes and displays the accuracy of the tagging process
+
+All data structures used are nested combinations of Python dictionaries and lists. Tags and words are generally used as dictionary keys to access (sometimes through a second dictionary level) frequency counts.
+
+Execution and results:
+
+ellerbb@linux-02:~/404/release$ ipython3 vtag.py
+Tagging accuracy (Viterbi decoding):  89.80115458627326 % (known:  96.22087931336486 % novel:  26.406926406926406 %)
+Tagging accuracy (Viterbi decoding):  93.70189223861449 % (known:  96.44858994569977 % novel:  83.36425479282622 %)
+
+The first line of output is the result produced by our Viterbi algorithm with add-one smoothing without backoff. As is obvious, the novel word accuracy is pretty bad, which drags down the overall accuracy.
+
+The second line of output is the result produced when the smoothing method is upgraded to one-count smoothing. The novel accuracy is much better with this smoothing method, yielding an increase of over 55 percentage points.
