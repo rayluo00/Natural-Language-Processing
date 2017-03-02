@@ -1,3 +1,15 @@
+'''
+ngram.py
+
+Authors: Ben Ellerby & Raymond Weiming Luo
+
+This program will be trained to determine the unigram, bigram,
+and trigram after it has been preprocessed to create unknown
+words '<UNK>'. After processing the n-grams, it will generate 
+10 sentences for each n-gram.
+
+'''
+
 import nltk
 import math
 
