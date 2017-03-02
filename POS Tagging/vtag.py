@@ -1,3 +1,16 @@
+'''
+vtag.py
+
+Author: Ben Ellerby & Raymond Weiming Luo
+
+This program is to determine the part-of-speech tagging using
+the VIterbi algorithm. The data are trained to find the most
+commonly associated tag for a given word. This program takes 
+two arguments, where arg[1] is the name of the training set 
+and arg[2] is the name of the testing set.
+
+'''
+
 from __future__ import division
 import math
 import sys
