@@ -1,6 +1,7 @@
 from __future__ import division
 import json
 import math
+import random
 from pprint import pprint
 from nltk.corpus import stopwords
 
@@ -17,23 +18,22 @@ def SplitData (data):
     data_len = len(data)
     trainc = round(data_len * 0.70)
     testc = data_len - trainc
-    train = []
-    test = []
 
-    for d in range(0, data_len):
-        if d < trainc:
-            train.append(data[d])
-        else:
-            test.append(data[d])
+    random.shuffle(data)
+
+    train = data[:trainc]
+    test = data[trainc:]
 
     return train, test
 
-def CalcPrior (train):
+def ProcessData (train):
     p1, p2, p3, p4, p5 = 0, 0, 0, 0, 0
     sz = len(train)
+    stopWords = stopwords.words('english')
 
-    for d in train:
-        overall = d['overall']
+    for i in range(0, sz):
+        # calculate prior
+        overall = train[i]['overall']
         if overall == 1.0:
             p1 += 1
         elif overall == 2.0:
@@ -55,8 +55,7 @@ def CalcPrior (train):
 
 def Train (train):
     train1, train2, train3, train4, train5 = ([] for i in range(5))
-    stopWords = stopwords.words('english')
-    prior1, prior2, prior3, prior4, prior5 = CalcPrior(train)
+    prior1, prior2, prior3, prior4, prior5 = ProcessData(train)
 
 if __name__ == '__main__':
     data =  ParseJSON()
