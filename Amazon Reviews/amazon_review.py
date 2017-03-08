@@ -2,8 +2,12 @@ from __future__ import division
 import json
 import math
 import random
+import numpy as np
 from pprint import pprint
+from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+from sklearn.naive_bayes import MultinomialNB
 
 def ParseJSON ():
     data = []
@@ -26,38 +30,37 @@ def SplitData (data):
 
     return train, test
 
-def ProcessData (train):
-    p1, p2, p3, p4, p5 = 0, 0, 0, 0, 0
+def Train (train):
     sz = len(train)
     stopWords = stopwords.words('english')
+    tokenizer = RegexpTokenizer(r'\w+')
+    scores = [1,2,3,4,5]
+    classifer = MultinomialNB()
 
-    for i in range(0, sz):
-        # calculate prior
+    for i in range(0, 10):
         overall = train[i]['overall']
-        if overall == 1.0:
-            p1 += 1
-        elif overall == 2.0:
-            p2 += 1
-        elif overall == 3.0:
-            p3 += 1
-        elif overall == 4.0:
-            p4 += 1
-        elif overall == 5.0:
-            p5 += 1
-
-    p1 = p1/sz
-    p2 = p2/sz
-    p3 = p3/sz
-    p4 = p4/sz
-    p5 = p5/sz
-
-    return p1, p2, p3, p4, p5
-
-def Train (train):
-    train1, train2, train3, train4, train5 = ([] for i in range(5))
-    prior1, prior2, prior3, prior4, prior5 = ProcessData(train)
+        review = tokenizer.tokenize(train[i]['reviewText'].lower())
+        #print(review)
+        review = [word for word in review if word not in stopWords]
+        #print(review,'\n')
 
 if __name__ == '__main__':
     data =  ParseJSON()
     train ,test = SplitData(data)
     Train(train)
+    #print(np.random.randint(20, size=(5, 100)))
+
+    # EXAMPLE
+    '''
+    X = np.random.randint(20, size=(5, 100))
+    y = np.array(['r1','r2','r3','r4','r5'])
+    clf = MultinomialNB()
+    clf.fit(X,y)
+    print(X,'\n')
+    x1 = np.random.randint(20, size=(1,100))
+    x2 = np.random.randint(20, size=(1,100))
+    x3 = np.random.randint(20, size=(1,100))
+    print(clf.predict(x1))
+    print(clf.predict(x2))
+    print(clf.predict(x3))
+    '''
