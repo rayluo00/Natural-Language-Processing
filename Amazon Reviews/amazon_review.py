@@ -77,10 +77,8 @@ def Train (train):
         d = dictionaries[j]
         dictionaries[j] = OrderedDict(sorted(d.items(), key=lambda x: x[0]))
 
-    '''
     for od in dictionaries:
         print(od,'\n')
-    '''
 
 if __name__ == '__main__':
     data =  ParseJSON()
