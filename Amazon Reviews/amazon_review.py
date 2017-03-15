@@ -44,6 +44,10 @@ def SplitData (data, kfold, trainc, testc, data_len):
     testEnd = testStart + testc
     train = []
     test = []
+    
+    if testEnd > data_len:
+        testEnd = data_len
+
     print(testStart, testEnd)
 
     for i in range(0, data_len):
