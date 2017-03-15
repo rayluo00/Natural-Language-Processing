@@ -4,14 +4,12 @@ from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
-import matplotlib.pyplot as plt
 
 def TestNaiveBayes (classifier, test, wordIndex):
     sz = len(test)
     word_len = len(wordIndex)
     stopWords = stopwords.words('english')
     tokenizer = RegexpTokenizer(r'\w+')
-    allTestReviews = []
     passCount = 0
 
     for i in range(0, sz):
@@ -31,6 +29,7 @@ def TestNaiveBayes (classifier, test, wordIndex):
             passCount += 1
 
     print("NB PASS:", passCount/sz)
+    return passCount
 
 def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex):
     sz = len(test)
@@ -56,4 +55,4 @@ def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex):
             passCount += 1
 
     print("SVM PASS:", passCount/sz,'\n')
-
+    return passCount

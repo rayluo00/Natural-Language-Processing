@@ -11,16 +11,23 @@ from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
 from test_amazon_review import TestNaiveBayes, TestSVM
 from sklearn import svm
-import matplotlib.pyplot as plt
 
 def ParseJSON ():
     data = []
     filename = 'Amazon_Instant_Video_5.json'
+    #filename = 'Apps_for_Android_5.json'
+    #filename = 'Beauty_5.json'
+    #filename = 'Digital_Music_5.json'
+    #filename = 'Office_Products_5.json'
     productID = {}
     smallDataID = []
+    reviewFilterRate = 100
+    count = 0
 
     with open('./json/'+filename, 'r') as dataFile:
         for line in dataFile:
+            if count == 300000:
+                break
             d = json.loads(line)
             data.append(d)
             
@@ -29,13 +36,24 @@ def ParseJSON ():
                 productID[prodID] = 1
             else:
                 productID[prodID] = productID[prodID] + 1
+            count += 1
+
+    sz = len(data)
+    if sz < 70000:
+        multiplier = 1
+    elif sz < 200000:
+        multiplier = 2
+    else:
+        multiplier = 30
+
+    reviewFilterRate = reviewFilterRate * multiplier
 
     for k in productID.keys():
-        if productID[k] < 100:
+        if productID[k] < reviewFilterRate:
             smallDataID.append(k)
 
     data = [d for d in data if d['asin'] not in smallDataID]
-    print('DATA SIZE:',len(data))
+    print(filename,'| DATA SIZE:',len(data))
 
     return data
 
@@ -69,8 +87,8 @@ def AddWord (dictionaries, idx, word):
         else:
             if word not in d:
                 d[word] = 0
-            else:
-                d[word] = d[word] + 1
+            #else:
+            #    d[word] = d[word] + 1
 
 def UpdateDict (dictionaries, overall, review):
     for word in review:
@@ -90,7 +108,7 @@ def TrainNaiveBayes (train):
     stopWords = stopwords.words('english')
     tokenizer = RegexpTokenizer(r'\w+')
     scores = [1,2,3,4,5]
-    classifier = MultinomialNB()
+    classifier = MultinomialNB(alpha=1.0)
     dictionaries = [{} for i in range(5)]
     trainBagOfWords = []
     wordIndex = []
@@ -121,6 +139,9 @@ def TrainSVM (trainMatrix, scores):
     return lin_svc
 
 if __name__ == '__main__':
+    nb = 0
+    svc = 0
+    testCount = 0
     data =  ParseJSON()
     #data = data[:5000]
     random.shuffle(data)
@@ -128,11 +149,15 @@ if __name__ == '__main__':
     trainc = round(data_len * 0.8)
     testc = data_len - trainc
 
-    kfolds = data_len // testc
+    kfolds = math.ceil(data_len / testc)
 
     for i in range(0, kfolds):
         train, test = SplitData(data, i, trainc, testc, data_len)
         classifier, wordIndex, trainMatrix, scores = TrainNaiveBayes(train)
-        TestNaiveBayes(classifier, test, wordIndex)
+        nb += TestNaiveBayes(classifier, test, wordIndex)
         lin_svc = TrainSVM(trainMatrix, scores)
-        TestSVM(lin_svc, trainMatrix, scores, test, wordIndex)
+        svc += TestSVM(lin_svc, trainMatrix, scores, test, wordIndex)
+        testCount += len(test)
+
+    print("FINAL NB:", nb/testCount)
+    print("FINAL SVC:", svc/testCount,'\n')
