@@ -9,14 +9,33 @@ from nltk.corpus import stopwords
 from nltk.probability import FreqDist
 from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
-from test_amazon_review import Test
+from test_amazon_review import TestNaiveBayes, TestSVM
+from sklearn import svm
+import matplotlib.pyplot as plt
 
 def ParseJSON ():
     data = []
     filename = 'Amazon_Instant_Video_5.json'
+    productID = {}
+    smallDataID = []
 
     with open('./json/'+filename, 'r') as dataFile:
-        data = [json.loads(line) for line in dataFile]
+        for line in dataFile:
+            d = json.loads(line)
+            data.append(d)
+            
+            prodID = d['asin']
+            if prodID not in productID:
+                productID[prodID] = 1
+            else:
+                productID[prodID] = productID[prodID] + 1
+
+    for k in productID.keys():
+        if productID[k] < 100:
+            smallDataID.append(k)
+
+    data = [d for d in data if d['asin'] not in smallDataID]
+    print('DATA SIZE:',len(data))
 
     return data
 
@@ -62,7 +81,7 @@ def UpdateDict (dictionaries, overall, review):
         else:
             AddWord(dictionaries, 4, word)
 
-def Train (train):
+def TrainNaiveBayes (train):
     sz = len(train)
     stopWords = stopwords.words('english')
     tokenizer = RegexpTokenizer(r'\w+')
@@ -91,11 +110,15 @@ def Train (train):
     trainMatrix = np.array(trainBagOfWords)
     classifier.fit(trainMatrix, scores)
 
-    return classifier, wordIndex
+    return classifier, wordIndex, trainMatrix, scores
+
+def TrainSVM (trainMatrix, scores):
+    lin_svc = svm.LinearSVC(C=1.0).fit(trainMatrix, scores)
+    return lin_svc
 
 if __name__ == '__main__':
     data =  ParseJSON()
-    data = data[:8000]
+    #data = data[:5000]
     random.shuffle(data)
     data_len = len(data)
     trainc = round(data_len * 0.8)
@@ -105,20 +128,7 @@ if __name__ == '__main__':
 
     for i in range(0, kfolds):
         train, test = SplitData(data, i, trainc, testc, data_len)
-        classifier, wordIndex = Train(train)
-        Test(classifier, test, wordIndex)
-
-    # EXAMPLE
-    '''
-    X = np.random.randint(20, size=(5, 100))
-    y = np.array(['r1','r2','r3','r4','r5'])
-    clf = MultinomialNB()
-    clf.fit(X,y)
-    print(X,'\n')
-    x1 = np.random.randint(20, size=(1,100))
-    x2 = np.random.randint(20, size=(1,100))
-    x3 = np.random.randint(20, size=(1,100))
-    print(clf.predict(x1))
-    print(clf.predict(x2))
-    print(clf.predict(x3))
-    '''
+        classifier, wordIndex, trainMatrix, scores = TrainNaiveBayes(train)
+        TestNaiveBayes(classifier, test, wordIndex)
+        lin_svc = TrainSVM(trainMatrix, scores)
+        TestSVM(lin_svc, trainMatrix, scores, test, wordIndex)
