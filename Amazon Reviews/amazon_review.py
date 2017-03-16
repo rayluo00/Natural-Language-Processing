@@ -9,15 +9,15 @@ from nltk.corpus import stopwords
 from nltk.probability import FreqDist
 from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
-from test_amazon_review import TestNaiveBayes, TestSVM
+from test_amazon_review import TestNaiveBayes, TestSVM, Demo
 from sklearn import svm
 
 def ParseJSON ():
     data = []
     #filename = 'Amazon_Instant_Video_5.json'
-    filename = 'Apps_for_Android_5.json'
+    #filename = 'Apps_for_Android_5.json'
     #filename = 'Beauty_5.json'
-    #filename = 'Digital_Music_5.json'
+    filename = 'Digital_Music_5.json'
     #filename = 'Office_Products_5.json'
     productID = {}
     smallDataID = []
@@ -88,8 +88,6 @@ def AddWord (dictionaries, idx, word):
         else:
             if word not in d:
                 d[word] = 0
-            #else:
-            #    d[word] = d[word] + 1
 
 def UpdateDict (dictionaries, overall, review):
     for word in review:
@@ -123,9 +121,9 @@ def TrainNaiveBayes (train):
     for j in range(0, 5):
         d = dictionaries[j]
         dictionaries[j] = OrderedDict(sorted(d.items(), key=lambda x: x[0]))
-
     for word in dictionaries[1].keys():
         wordIndex.append(word)
+    #wordIndex = [dictionaries[1].keys()]
 
     for od in dictionaries:
         trainBagOfWords.append([k for k in od.values()])
@@ -150,15 +148,22 @@ if __name__ == '__main__':
     trainc = round(data_len * 0.8)
     testc = data_len - trainc
 
-    kfolds = math.ceil(data_len / testc)
+    mainNB, mainWordIndex, mainTrain, scores = TrainNaiveBayes(data)
+    mainSVC = TrainSVM(mainTrain, scores)
 
+    '''
+    kfolds = math.ceil(data_len / testc)
     for i in range(0, kfolds):
         train, test = SplitData(data, i, trainc, testc, data_len)
         classifier, wordIndex, trainMatrix, scores = TrainNaiveBayes(train)
-        nb += TestNaiveBayes(classifier, test, wordIndex)
+        word_len = len(wordIndex)
+        nb += TestNaiveBayes(classifier, test, wordIndex, word_len)
         lin_svc = TrainSVM(trainMatrix, scores)
-        svc += TestSVM(lin_svc, trainMatrix, scores, test, wordIndex)
+        svc += TestSVM(lin_svc, trainMatrix, scores, test, wordIndex, word_len)
         testCount += len(test)
 
     print("FINAL NB:", nb/testCount)
     print("FINAL SVC:", svc/testCount,'\n')
+    '''
+
+    Demo(mainWordIndex, len(mainWordIndex), mainSVC, mainNB)
