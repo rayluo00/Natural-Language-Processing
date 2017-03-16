@@ -14,8 +14,8 @@ from sklearn import svm
 
 def ParseJSON ():
     data = []
-    filename = 'Amazon_Instant_Video_5.json'
-    #filename = 'Apps_for_Android_5.json'
+    #filename = 'Amazon_Instant_Video_5.json'
+    filename = 'Apps_for_Android_5.json'
     #filename = 'Beauty_5.json'
     #filename = 'Digital_Music_5.json'
     #filename = 'Office_Products_5.json'
@@ -39,6 +39,7 @@ def ParseJSON ():
             count += 1
 
     sz = len(data)
+    print('OG SIZE:', sz)
     if sz < 70000:
         multiplier = 1
     elif sz < 200000:
