@@ -1,3 +1,14 @@
+'''
+test_amazon_review.pg
+
+Author: Raymond Weiming Luo
+
+Testing program to validate the pass rate for the Naive Bayes and 
+Support Vector Machine classifiers. The validation is for the 
+testing dataset.
+
+'''
+
 from __future__ import division
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
@@ -8,6 +19,12 @@ from nltk.corpus import stopwords
 stopWords = stopwords.words('english')
 tokenizer = RegexpTokenizer(r'\w+')
 
+####################################################################
+'''
+Test each review from the Naive Bayes classifier in the testing set
+to compare the accuracy with the generated rating with the actual 
+review.
+'''
 def TestNaiveBayes (classifier, test, wordIndex, word_len):
     sz = len(test)
     passCount = 0
@@ -31,6 +48,12 @@ def TestNaiveBayes (classifier, test, wordIndex, word_len):
     print("NB PASS:", passCount/sz)
     return passCount
 
+####################################################################
+'''
+Test each review from the Support Vector Machine classifier in the 
+testing set and compare the accuracy of the generated rating with 
+the actual rating.
+'''
 def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex, word_len):
     sz = len(test)
     passCount = 0
@@ -54,6 +77,11 @@ def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex, word_len):
     print("SVM PASS:", passCount/sz,'\n')
     return passCount
 
+####################################################################
+'''
+Demo function to recieve the text for a review as input and print the
+generated rating for Naive Bayes and Support Vector Machine.
+'''
 def Demo (wordIndex, word_len, lin_svc, classifier):
 
     while True:

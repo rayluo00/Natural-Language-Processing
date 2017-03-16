@@ -1,3 +1,15 @@
+''' 
+amazon_review.py
+
+Author: Raymond Weiming Luo
+
+Amazon review analysis using Naive Bayes and Support Vector Machine
+classifiers. The classifiers are validated using k-folds, which is
+currently implemented as 5-folds. The program splits the data to 
+80% training and 20% testing.
+
+'''
+
 from __future__ import division
 import json
 import math
@@ -12,8 +24,12 @@ from collections import OrderedDict
 from test_amazon_review import TestNaiveBayes, TestSVM, Demo
 from sklearn import svm
 
+####################################################################
 '''
-
+Parse the json file and filter the data to have at most 300000 
+data points, otherwise it would be highly computational for testing.
+The data is also filtered to find unique products with 100+ reviews 
+to improve reliability with the reviews.
 '''
 def ParseJSON ():
     data = []
@@ -60,6 +76,11 @@ def ParseJSON ():
 
     return data
 
+####################################################################
+'''
+Split the data for each subset of the original data to a training set
+and testing set. The testing data subset is iterative based on k-folds.
+'''
 def SplitData (data, kfold, trainc, testc, data_len):
     testStart = kfold * testc
     testEnd = testStart + testc
@@ -79,6 +100,10 @@ def SplitData (data, kfold, trainc, testc, data_len):
 
     return train, test
 
+####################################################################
+'''
+Add the word into the bag of words dictionary for each class.
+'''
 def AddWord (dictionaries, idx, word):
     for i in range(0, 5):
         d = dictionaries[i]
@@ -91,6 +116,11 @@ def AddWord (dictionaries, idx, word):
             if word not in d:
                 d[word] = 0
 
+####################################################################
+'''
+Update the dictionary with the word for the specified class that is
+associated with the rating of the review.
+'''
 def UpdateDict (dictionaries, overall, review):
     for word in review:
         if overall == 1.0:
@@ -104,6 +134,12 @@ def UpdateDict (dictionaries, overall, review):
         else:
             AddWord(dictionaries, 4, word)
 
+####################################################################
+'''
+Train the classifier for Naive Bayes, each class has a bag of words
+and all of the bag of words is created into a 5xN matrix. The 5 
+represents each rating class and N is the size for the bag of words.
+'''
 def TrainNaiveBayes (train):
     sz = len(train)
     stopWords = stopwords.words('english')
@@ -134,6 +170,7 @@ def TrainNaiveBayes (train):
 
     return classifier, wordIndex, trainMatrix, scores
 
+####################################################################
 '''
 Train the LinearSVC on the training bag of words matrix and return
 the classifier for Support Vector Machine.
@@ -142,6 +179,7 @@ def TrainSVM (trainMatrix, scores):
     lin_svc = svm.LinearSVC(C=1.0).fit(trainMatrix, scores)
     return lin_svc
 
+####################################################################
 '''
 Retrieve the data and split to a training and testing set. Perform
 a k-fold validation for Naive Bayes and Support Vector Machine 
@@ -160,7 +198,6 @@ if __name__ == '__main__':
     mainNB, mainWordIndex, mainTrain, scores = TrainNaiveBayes(data)
     mainSVC = TrainSVM(mainTrain, scores)
 
-    # k-folds implementation
     kfolds = math.ceil(data_len / testc)
     for i in range(0, kfolds):
         train, test = SplitData(data, i, trainc, testc, data_len)
