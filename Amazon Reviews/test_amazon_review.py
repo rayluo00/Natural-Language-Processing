@@ -72,4 +72,5 @@ def Demo (wordIndex, word_len, lin_svc, classifier):
         nbRating = classifier.predict(testcase)[0]
         svcRating = lin_svc.predict(testcase)[0]
 
-        print('\nRating:',nbRating)
+        print('\nNaive Bayes Rating:',nbRating,
+                '\nSupport Vector Machine Rating:',svcRating)

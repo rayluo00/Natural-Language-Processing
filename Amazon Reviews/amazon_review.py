@@ -12,6 +12,9 @@ from collections import OrderedDict
 from test_amazon_review import TestNaiveBayes, TestSVM, Demo
 from sklearn import svm
 
+'''
+
+'''
 def ParseJSON ():
     data = []
     #filename = 'Amazon_Instant_Video_5.json'
@@ -19,6 +22,7 @@ def ParseJSON ():
     #filename = 'Beauty_5.json'
     filename = 'Digital_Music_5.json'
     #filename = 'Office_Products_5.json'
+
     productID = {}
     smallDataID = []
     reviewFilterRate = 100
@@ -39,7 +43,6 @@ def ParseJSON ():
             count += 1
 
     sz = len(data)
-    print('OG SIZE:', sz)
     if sz < 70000:
         multiplier = 1
     elif sz < 200000:
@@ -54,7 +57,6 @@ def ParseJSON ():
             smallDataID.append(k)
 
     data = [d for d in data if d['asin'] not in smallDataID]
-    print(filename,'| DATA SIZE:',len(data))
 
     return data
 
@@ -123,7 +125,6 @@ def TrainNaiveBayes (train):
         dictionaries[j] = OrderedDict(sorted(d.items(), key=lambda x: x[0]))
     for word in dictionaries[1].keys():
         wordIndex.append(word)
-    #wordIndex = [dictionaries[1].keys()]
 
     for od in dictionaries:
         trainBagOfWords.append([k for k in od.values()])
@@ -133,16 +134,24 @@ def TrainNaiveBayes (train):
 
     return classifier, wordIndex, trainMatrix, scores
 
+'''
+Train the LinearSVC on the training bag of words matrix and return
+the classifier for Support Vector Machine.
+'''
 def TrainSVM (trainMatrix, scores):
     lin_svc = svm.LinearSVC(C=1.0).fit(trainMatrix, scores)
     return lin_svc
 
+'''
+Retrieve the data and split to a training and testing set. Perform
+a k-fold validation for Naive Bayes and Support Vector Machine 
+classification.
+'''
 if __name__ == '__main__':
     nb = 0
     svc = 0
     testCount = 0
     data =  ParseJSON()
-    #data = data[:5000]
     random.shuffle(data)
     data_len = len(data)
     trainc = round(data_len * 0.8)
@@ -151,7 +160,7 @@ if __name__ == '__main__':
     mainNB, mainWordIndex, mainTrain, scores = TrainNaiveBayes(data)
     mainSVC = TrainSVM(mainTrain, scores)
 
-    '''
+    # k-folds implementation
     kfolds = math.ceil(data_len / testc)
     for i in range(0, kfolds):
         train, test = SplitData(data, i, trainc, testc, data_len)
@@ -164,6 +173,6 @@ if __name__ == '__main__':
 
     print("FINAL NB:", nb/testCount)
     print("FINAL SVC:", svc/testCount,'\n')
-    '''
 
-    Demo(mainWordIndex, len(mainWordIndex), mainSVC, mainNB)
+    # Demo
+    #Demo(mainWordIndex, len(mainWordIndex), mainSVC, mainNB)
