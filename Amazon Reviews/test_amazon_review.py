@@ -28,6 +28,11 @@ review.
 def TestNaiveBayes (classifier, test, wordIndex, word_len):
     sz = len(test)
     passCount = 0
+    star1 = 0 
+    star2 = 0 
+    star3 = 0 
+    star4 = 0 
+    star5 = 0
 
     for i in range(0, sz):
         overall = int(test[i]['overall'])
@@ -43,10 +48,25 @@ def TestNaiveBayes (classifier, test, wordIndex, word_len):
         rating = classifier.predict(testcase)[0]
         
         if (rating == overall):
+            if overall == 1.0:
+                star1 += 1
+            elif overall == 2.0:
+                star2 += 1
+            elif overall == 3.0:
+                star3 += 1
+            elif overall == 4.0:
+                star4 += 1
+            else:
+                star5 += 1
+
             passCount += 1
+    
+    if passCount == 0:
+        passCount = 1
 
     print("NB PASS:", passCount/sz)
-    return passCount
+    return passCount,(star1/passCount),(star2/passCount),(star3/passCount),(star4/passCount),(star5/passCount)
+
 
 ####################################################################
 '''
@@ -57,6 +77,11 @@ the actual rating.
 def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex, word_len):
     sz = len(test)
     passCount = 0
+    star1 = 0
+    star2 = 0 
+    star3 = 0 
+    star4 = 0 
+    star5 = 0
 
     for i in range(0, sz):
         overall = int(test[i]['overall'])
@@ -72,10 +97,24 @@ def TestSVM (lin_svc, trainMatrix, scores, test, wordIndex, word_len):
         rating = lin_svc.predict(testcase)[0]
         
         if (rating == overall):
+            if overall == 1.0:
+                star1 += 1
+            elif overall == 2.0:
+                star2 += 1
+            elif overall == 3.0:
+                star3 += 1
+            elif overall == 4.0:
+                star4 += 1
+            else:
+                star5 += 1
+
             passCount += 1
+   
+    if passCount == 0:
+        passCount = 1
 
     print("SVM PASS:", passCount/sz,'\n')
-    return passCount
+    return passCount,(star1/passCount),(star2/passCount),(star3/passCount),(star4/passCount),(star5/passCount)
 
 ####################################################################
 '''

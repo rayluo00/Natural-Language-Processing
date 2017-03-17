@@ -34,9 +34,9 @@ to improve reliability with the reviews.
 def ParseJSON ():
     data = []
     #filename = 'Amazon_Instant_Video_5.json'
-    #filename = 'Apps_for_Android_5.json'
+    filename = 'Apps_for_Android_5.json'
     #filename = 'Beauty_5.json'
-    filename = 'Digital_Music_5.json'
+    #filename = 'Digital_Music_5.json'
     #filename = 'Office_Products_5.json'
 
     productID = {}
@@ -189,6 +189,16 @@ if __name__ == '__main__':
     nb = 0
     svc = 0
     testCount = 0
+    nbs1 = 0
+    nbs2 = 0
+    nbs3 = 0
+    nbs4 = 0
+    nbs5 = 0
+    ss1 = 0
+    ss2 = 0
+    ss3 = 0
+    ss4 = 0
+    ss5 = 0
     data =  ParseJSON()
     random.shuffle(data)
     data_len = len(data)
@@ -203,13 +213,28 @@ if __name__ == '__main__':
         train, test = SplitData(data, i, trainc, testc, data_len)
         classifier, wordIndex, trainMatrix, scores = TrainNaiveBayes(train)
         word_len = len(wordIndex)
-        nb += TestNaiveBayes(classifier, test, wordIndex, word_len)
+        ret_nb, ret_nbs1, ret_nbs2, ret_nbs3, ret_nbs4, ret_nbs5 = TestNaiveBayes(classifier, test, wordIndex, word_len)
         lin_svc = TrainSVM(trainMatrix, scores)
-        svc += TestSVM(lin_svc, trainMatrix, scores, test, wordIndex, word_len)
+        ret_svc, ret_ss1, ret_ss2, ret_ss3, ret_ss4, ret_ss5 = TestSVM(lin_svc, trainMatrix, scores, test, wordIndex, word_len)
         testCount += len(test)
+        
+        nb += ret_nb
+        nbs1 += ret_nbs1
+        nbs2 += ret_nbs2
+        nbs3 += ret_nbs3
+        nbs4 += ret_nbs4
+        nbs5 += ret_nbs5
+        svc += ret_svc
+        ss1 += ret_ss1
+        ss2 += ret_ss2
+        ss3 += ret_ss3
+        ss4 += ret_ss4
+        ss5 += ret_ss5
 
     print("FINAL NB:", nb/testCount)
     print("FINAL SVC:", svc/testCount,'\n')
+    print("FINAL NB RATINGS:", nbs1/5, nbs2/5, nbs3/5, nbs4/5, nbs5/5)
+    print("FINAL SVC RATINGS:", ss1/5,ss2/5,ss3/5,ss4/5,ss5/5)
 
     # Demo
     #Demo(mainWordIndex, len(mainWordIndex), mainSVC, mainNB)
